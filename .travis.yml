@@ -1,0 +1,15 @@
+language: java
+install:
+  -  chmod +x gradlew
+  -  sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
+script:
+  - ./gradlew build uploadArchives
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+    - $HOME/.gradle
+    - .gradle
+    - gradle
+jdk:
+- oraclejdk8

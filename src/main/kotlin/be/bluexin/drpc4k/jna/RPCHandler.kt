@@ -82,16 +82,22 @@ object RPCHandler {
     fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
         if (connected.get()) throw IllegalStateException("Already connected!")
         runner = launch(CommonPool) {
-            DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
 
             try {
+                DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
                 while (isActive) {
                     DiscordRpc.Discord_RunCallbacks()
                     delay(refreshRate)
                 }
+            } catch (e: CancellationException) {
+                onDisconnected(0, "Discord RPC Thread closed.")
+            } catch (e: Throwable) {
+                onErrored(-1, "Unknown error caused by: ${e.message}")
             } finally {
                 connected.set(false)
-                DiscordRpc.Discord_Shutdown()
+                try {
+                    DiscordRpc.Discord_Shutdown()
+                } catch (e: Throwable) {}
             }
         }
     }
@@ -155,13 +161,13 @@ object RPCHandler {
             this@RPCHandler.onReady()
         }
         onDisconnected { errorCode, message ->
-            println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() }?: "No message provided"})")
+            println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected.set(true)
             runner?.cancel()
             this@RPCHandler.onDisconnected(errorCode, message)
         }
         onErrored { errorCode, message ->
-            println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() }?: "No message provided"})")
+            println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected.set(true)
             runner?.cancel()
             this@RPCHandler.onErrored(errorCode, message)

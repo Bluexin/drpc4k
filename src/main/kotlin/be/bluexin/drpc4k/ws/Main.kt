@@ -1,3 +1,4 @@
+/*
 package be.bluexin.drpc4k.ws
 
 import org.java_websocket.WebSocket
@@ -73,3 +74,4 @@ class EmptyClient(serverURI: URI,
         super.onWebsocketHandshakeSentAsClient(conn, request)
     }
 }
+*/

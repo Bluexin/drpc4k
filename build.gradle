@@ -17,7 +17,8 @@ apply plugin: 'kotlin'
 apply plugin: 'maven'
 apply plugin: 'application'
 
-sourceCompatibility = 1.9
+sourceCompatibility = 1.8
+//sourceCompatibility = 1.9
 mainClassName = "be.bluexin.drpc4k.jna.MainKt"
 
 repositories {
@@ -37,10 +38,9 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"
-    shade "org.java-websocket:Java-WebSocket:1.3.6"
+//    shade "org.java-websocket:Java-WebSocket:1.3.6"
     shade "net.java.dev.jna:jna:4.5.0"
-    shadeInPlace files("libs/discord-rpc-2.0.1/win64-dynamic/bin/discord-rpc.dll")
-    compile files("libs/discord-rpc-2.0.1/win64-dynamic/bin")
+    shadeInPlace files("libs")
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
@@ -69,4 +69,18 @@ jar {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.2.1'
+}
+
+uploadArchives {
+    if (System.getenv('REPO_PWD') != null) {
+        repositories.mavenDeployer {
+            repository(url: "http://maven.bluexin.be/repository/" + (((String) project.version).contains("SNAPSHOT") ? "snapshots" : "releases") + "/") {
+                authentication(userName: "travis", password: System.getenv('REPO_PWD'))
+            }
+        }
+    } /*else {
+            repositories.mavenDeployer {
+                repository(url: "file://" + (System.getenv("local_maven") != null ? System.getenv("local_maven") : project.buildDir.toString() + "/libs/mvn"))
+            }
+    }*/
 }

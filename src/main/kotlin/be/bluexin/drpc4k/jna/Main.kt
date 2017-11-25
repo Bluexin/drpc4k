@@ -41,6 +41,9 @@ fun t2(args: Array<String>) {
         return
     }
 
+    RPCHandler.onErrored = { errorCode, message -> System.err.println("$errorCode = $message") }
+    RPCHandler.onDisconnected = { errorCode, message -> println("${if (errorCode != 0) "$errorCode = " else ""}$message") }
+
     RPCHandler.connect(args[0])
 
     val presence = DiscordRichPresence {

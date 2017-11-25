@@ -1,12 +1,15 @@
+/*
 package be.bluexin.drpc4k.kinterface
 
 import java.util.*
 
+*/
 /**
  * Part of drpc4k by Bluexin, released under GNU GPLv3.
  *
  * @author Bluexin
- */
+ *//*
+
 
 
 data class DiscordEventHandlers( // TODO: replace defaults with no-op
@@ -25,7 +28,9 @@ data class DiscordEventHandlers( // TODO: replace defaults with no-op
         var spectateGame: (spectateSecret: String) -> Unit = { joinSecret ->
             println("Discord spectate game: $joinSecret")
         },
-        var joinRequest: (request: Any /*DiscordJoinRequest*/) -> Unit = { joinSecret ->
+        var joinRequest: (request: Any */
+/*DiscordJoinRequest*//*
+) -> Unit = { joinSecret ->
             println("Discord join request: $joinSecret")
         }
 )
@@ -99,16 +104,20 @@ object RpcConnection {
                 // if (!connection.open()) return
                 TODO()
             State.SentHandshake -> {
-                val message: Any /*JsonDocument*/ = this
+                val message: Any */
+/*JsonDocument*//*
+ = this
                 if (read(message)) {
-                    /*auto cmd = GetStrMember(&message, "cmd");
+                    */
+/*auto cmd = GetStrMember(&message, "cmd");
                     auto evt = GetStrMember(&message, "evt");
                     if (cmd && evt && !strcmp(cmd, "DISPATCH") && !strcmp(evt, "READY")) {
                         state = State::Connected;
                         if (onConnect) {
                             onConnect();
                         }
-                    }*/
+                    }*//*
+
                 }
 
                 TODO()
@@ -116,14 +125,16 @@ object RpcConnection {
             State.AwaitingResponse -> {
                 sendFrame.opcode = OpCode.Handshake
                 sendFrame.length = 0 // (uint32_t)JsonWriteHandshakeObj(sendFrame.message, sizeof(sendFrame.message), RpcVersion, appId);
-                /*
+                */
+/*
                 if (connection->Write(&sendFrame, sizeof(MessageFrameHeader) + sendFrame.length)) {
                     state = State::SentHandshake;
                 }
                 else {
                     Close();
                 }
-                 */
+                 *//*
+
                 TODO()
             }
         }
@@ -138,24 +149,33 @@ object RpcConnection {
         TODO()
     }
 
-    fun write(data: Any? /*const void* */, length: Int): Boolean {
+    fun write(data: Any? */
+/*const void* *//*
+, length: Int): Boolean {
         sendFrame.opcode = OpCode.Frame
-        sendFrame.message = charArrayOf(/*data*/)
+        sendFrame.message = charArrayOf(*/
+/*data*//*
+)
         sendFrame.length = length
-        /*
+        */
+/*
         if (!connection->Write(&sendFrame, sizeof(MessageFrameHeader) + length)) {
             Close();
             return false;
         }
-         */
+         *//*
+
         TODO()
         return true
     }
 
-    fun read(message: Any /*JsonDocument*/): Boolean {
+    fun read(message: Any */
+/*JsonDocument*//*
+): Boolean {
         TODO()
 
-        /*
+        */
+/*
         bool RpcConnection::Read(JsonDocument& message)
         {
             if (state != State::Connected && state != State::SentHandshake) {
@@ -213,7 +233,8 @@ object RpcConnection {
                 }
             }
         }
-     */
+     *//*
+
     }
 
     fun create(applicationId: String): RpcConnection {
@@ -237,6 +258,7 @@ object BaseConnection {
     }
 }
 
+*/
 /*
 struct BaseConnection {
     static BaseConnection* Create();
@@ -247,6 +269,8 @@ struct BaseConnection {
     bool Write(const void* data, size_t length);
     bool Read(void* data, size_t length);
 };
- */
+ *//*
 
 
+
+*/
