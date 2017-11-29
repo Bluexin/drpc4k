@@ -57,6 +57,8 @@ fun t2(args: Array<String>) {
         largeImageKey = "ia_sakura_water"
         smallImageText = "OwO smol"
         largeImageText = "OwO big"
+        joinSecret = "anawesomesecret"
+        spectateSecret = "anawesomesecret2"
     }
 
     RPCHandler.ifConnectedOrLater {
@@ -64,7 +66,7 @@ fun t2(args: Array<String>) {
     }
 
     println("Starting to sleep...")
-    Thread.sleep(10000)
+    Thread.sleep(1200000)
 
     println("Done, disconnecting")
     if (RPCHandler.connected.get()) RPCHandler.disconnect()

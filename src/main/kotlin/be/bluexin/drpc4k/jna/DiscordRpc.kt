@@ -28,6 +28,8 @@ import com.sun.jna.Pointer
 
 /**
  * Maps directly to discord-rpc.h
+ * Use this only if you know what you're doing.
+ * The handler class [RPCHandler] will be more useful for most people.
  *
  * @author Bluexin
  */
@@ -294,23 +296,27 @@ class DiscordRichPresence() : Structure() {
     @JvmField
     internal var _instance: Byte = 0
 
-    override fun getFieldOrder() = listOf(
-            "_state",
-            "_details",
-            "_startTimeStamp",
-            "_endTimeStamp",
-            "_largeImageKey",
-            "_largeImageText",
-            "_smallImageKey",
-            "_smallImageText",
-            "_partyId",
-            "_partySize",
-            "_partyMax",
-            "_matchSecret",
-            "_joinSecret",
-            "_spectateSecret",
-            "_instance"
-    )
+    override fun getFieldOrder() = FIELD_ORDER
+
+    private companion object {
+        val FIELD_ORDER = listOf(
+                "_state",
+                "_details",
+                "_startTimeStamp",
+                "_endTimeStamp",
+                "_largeImageKey",
+                "_largeImageText",
+                "_smallImageKey",
+                "_smallImageText",
+                "_partyId",
+                "_partySize",
+                "_partyMax",
+                "_matchSecret",
+                "_joinSecret",
+                "_spectateSecret",
+                "_instance"
+        )
+    }
 
     internal fun ensureLength(value: String, max: Int, field: String) {
         if (value.length > max) throw IllegalArgumentException("$field must not be longer than $max characters. Provided ${value.length} chars.")
@@ -378,6 +384,8 @@ class DiscordEventHandlers() : Structure() {
         happens when user logs out
     4000 = Invalid Client ID
         happens when Client ID is wrong, or when user is not logged into Discord
+    5005 = secrets must be unique
+        happens when you use the same secret for invite & spectate
      */
 
     internal lateinit var _ready: Pointer
@@ -387,14 +395,18 @@ class DiscordEventHandlers() : Structure() {
     internal lateinit var _spectateGame: Pointer
     internal lateinit var _joinRequest: Pointer
 
-    override fun getFieldOrder() = listOf(
-            "_ready",
-            "_disconnected",
-            "_errored",
-            "_joinGame",
-            "_spectateGame",
-            "_joinRequest"
-    )
+    override fun getFieldOrder() = FIELD_ORDER
+
+    private companion object {
+        val FIELD_ORDER = listOf(
+                "_ready",
+                "_disconnected",
+                "_errored",
+                "_joinGame",
+                "_spectateGame",
+                "_joinRequest"
+        )
+    }
 }
 
 /**
@@ -427,11 +439,15 @@ class DiscordJoinRequest : Structure() {
      */
     lateinit var avatar: String
 
-    override fun getFieldOrder() = listOf(
-            "userId",
-            "username",
-            "avatar"
-    )
+    override fun getFieldOrder() = FIELD_ORDER
+
+    private companion object {
+        val FIELD_ORDER = listOf(
+        "userId",
+        "username",
+        "avatar"
+        )
+    }
 }
 
 abstract class Structure : com.sun.jna.Structure() {
