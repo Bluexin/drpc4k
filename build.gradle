@@ -52,6 +52,15 @@ kotlin {
     }
 }
 
+task sourceJar(type: Jar, dependsOn: "sourceMainJava", overwrite: true) {
+    from "build/sources/main/java"
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourceJar
+}
+
 jar {
     for (dep in configurations.shade) {
         from(project.zipTree(dep)) {
