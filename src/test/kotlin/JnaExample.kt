@@ -21,22 +21,20 @@ import be.bluexin.drpc4k.jna.DiscordRichPresence
 import be.bluexin.drpc4k.jna.RPCHandler
 import java.util.*
 
-/**
- * Part of drpc4k by Bluexin, released under GNU GPLv3.
- *
- * @author Bluexin
- */
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
         println("Missing Client ID")
         return
     }
 
+    // Setting up error/disconnection callbacks
     RPCHandler.onErrored = { errorCode, message -> System.err.println("$errorCode = $message") }
     RPCHandler.onDisconnected = { errorCode, message -> println("${if (errorCode != 0) "$errorCode = " else ""}$message") }
 
+    // Connect using the client ID
     RPCHandler.connect(args[0])
 
+    // Let's build our awesome presence
     val presence = DiscordRichPresence {
         details = "Raid: Kill Migas"
         state = "Recruiting"
@@ -53,14 +51,17 @@ fun main(args: Array<String>) {
     }
 
     RPCHandler.ifConnectedOrLater {
+        // This will be called immediately if we are connected, or as soon as we connect
         RPCHandler.updatePresence(presence)
     }
 
+    // "playing the game" ;p
     println("Starting to sleep...")
     Thread.sleep(120000)
 
     println("Done, disconnecting")
     if (RPCHandler.connected.get()) RPCHandler.disconnect()
 
+    // Making sure everything is done.
     RPCHandler.finishPending()
 }
