@@ -2,7 +2,7 @@ group 'be.bluexin'
 version "$version_number.$build_number"
 
 buildscript {
-    ext.kotlin_version = '1.1.60'
+    ext.kotlin_version = '1.2.0'
 
     repositories {
         mavenCentral()
@@ -15,11 +15,9 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'maven'
-apply plugin: 'application'
 
 sourceCompatibility = 1.8
 //sourceCompatibility = 1.9
-mainClassName = "be.bluexin.drpc4k.jna.MainKt"
 
 repositories {
     jcenter()
@@ -33,6 +31,7 @@ configurations {
     compile.extendsFrom shadeInPlace
 }
 
+// TODO: https://github.com/kotlin/kotlinx.serialization
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
@@ -41,7 +40,7 @@ dependencies {
 //    shade "org.java-websocket:Java-WebSocket:1.3.6"
     shade "net.java.dev.jna:jna:4.5.0"
     shadeInPlace files("libs")
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+//    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 compileKotlin {
