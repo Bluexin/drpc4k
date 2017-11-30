@@ -17,8 +17,8 @@
  * along with drpc4k.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package be.bluexin.drpc4k.jna
-
+import be.bluexin.drpc4k.jna.DiscordRichPresence
+import be.bluexin.drpc4k.jna.RPCHandler
 import java.util.*
 
 /**

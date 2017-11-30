@@ -52,8 +52,9 @@ kotlin {
     }
 }
 
-task sourceJar(type: Jar, dependsOn: "sourceMainJava", overwrite: true) {
-    from "build/sources/main/java"
+task sourceJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    from sourceSets.test.allSource
     classifier = 'sources'
 }
 
