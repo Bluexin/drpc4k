@@ -32,15 +32,6 @@ fun main(args: Array<String>) {
         return
     }
 
-    t2(args)
-}
-
-fun t2(args: Array<String>) {
-    if (args.isEmpty()) {
-        println("Missing Client ID")
-        return
-    }
-
     RPCHandler.onErrored = { errorCode, message -> System.err.println("$errorCode = $message") }
     RPCHandler.onDisconnected = { errorCode, message -> println("${if (errorCode != 0) "$errorCode = " else ""}$message") }
 
@@ -66,7 +57,7 @@ fun t2(args: Array<String>) {
     }
 
     println("Starting to sleep...")
-    Thread.sleep(1200000)
+    Thread.sleep(120000)
 
     println("Done, disconnecting")
     if (RPCHandler.connected.get()) RPCHandler.disconnect()

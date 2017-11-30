@@ -31,16 +31,13 @@ configurations {
     compile.extendsFrom shadeInPlace
 }
 
-// TODO: https://github.com/kotlin/kotlinx.serialization
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"
-//    shade "org.java-websocket:Java-WebSocket:1.3.6"
     shade "net.java.dev.jna:jna:4.5.0"
     shadeInPlace files("libs")
-//    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 compileKotlin {
