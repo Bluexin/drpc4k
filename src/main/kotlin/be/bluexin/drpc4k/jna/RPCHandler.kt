@@ -74,7 +74,7 @@ object RPCHandler {
      * Tries to connect the Discord Rich Presence Connection asynchronously.
      *
      * @param[clientId] your app's public ID, client_id, application_id, whatever you wanna call it
-     * @param[autoRegister] whether Discord should register your app for automatic launch
+     * @param[autoRegister] whether Discord should register your app for automatic launch (untested! Probably broken because Java)
      * @param[steamId] your app's Steam ID, if any
      * @param[refreshRate] the rate at which this handler will run callbacks and send info to discord
      * @throws [IllegalStateException] when already connected
