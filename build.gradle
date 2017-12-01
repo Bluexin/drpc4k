@@ -31,6 +31,8 @@ configurations {
     compile.extendsFrom shadeInPlace
 }
 
+ext.discord_rpc_version = "2.0.1"
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
@@ -38,6 +40,9 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"
     shade "net.java.dev.jna:jna:4.5.0"
     shadeInPlace files("libs")
+    shadeInPlace files("libsExt") {
+        builtBy 'expandDiscordRPC'
+    }
 }
 
 compileKotlin {
@@ -89,4 +94,48 @@ uploadArchives {
                 repository(url: "file://" + (System.getenv("local_maven") != null ? System.getenv("local_maven") : project.buildDir.toString() + "/libs/mvn"))
             }
     }*/
+}
+
+task dlDiscordRPC {
+    println("Downloading discord-rpc v$discord_rpc_version...")
+    def map = new HashMap<String, String>()
+    map.put("Accept", "application/octet-stream")
+    def connection = new URL("https://github.com/discordapp/discord-rpc/releases/download/v$discord_rpc_version/discord-rpc-${discord_rpc_version}.zip").openConnection()
+    file("tmp").mkdir()
+    connection.inputStream.withStream {
+        file("tmp/discord-rpc-dl.zip").bytes = it.bytes
+    }
+}
+
+task expandDiscordRPC(type: Copy, dependsOn: dlDiscordRPC) {
+    println("Expanding discord-rpc...")
+    def zipFile = file("tmp/discord-rpc-dl.zip")
+    def outputDir = "libsExt"
+    delete outputDir
+
+    def extensions = ["dll", "so"]
+    def map = [
+            "win64-dynamic": "win32-x86-64",
+            "win32-dynamic": "win32-x86"
+    ]
+
+    from zipTree(zipFile)
+    into outputDir
+    eachFile { FileCopyDetails fcp ->
+        boolean accepted = false
+        def split = fcp.name.split("\\.")
+        if (split.any() && split.last() in extensions) for (entry in map) {
+            if (fcp.relativePath.pathString.contains(entry.key)) {
+                fcp.relativePath = new RelativePath(true, entry.value, fcp.name)
+                accepted = true
+                break
+            }
+        }
+        if (!accepted) fcp.exclude()
+    }
+    includeEmptyDirs = false
+
+    doLast {
+        delete "tmp"
+    }
 }
