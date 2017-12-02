@@ -31,7 +31,7 @@ configurations {
     compile.extendsFrom shadeInPlace
 }
 
-ext.discord_rpc_version = "2.0.1"
+ext.discord_rpc_version = "2.1.0"
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -96,37 +96,46 @@ uploadArchives {
     }*/
 }
 
+def downloadOne(String url, String filename) {
+    file("tmp").mkdir()
+    def connection = new URL(url).openConnection()
+    connection.inputStream.withStream {
+        file("tmp/$filename").bytes = it.bytes
+    }
+}
+
 task dlDiscordRPC {
     println("Downloading discord-rpc v$discord_rpc_version...")
-    def map = new HashMap<String, String>()
-    map.put("Accept", "application/octet-stream")
-    def connection = new URL("https://github.com/discordapp/discord-rpc/releases/download/v$discord_rpc_version/discord-rpc-${discord_rpc_version}.zip").openConnection()
-    file("tmp").mkdir()
-    connection.inputStream.withStream {
-        file("tmp/discord-rpc-dl.zip").bytes = it.bytes
+    ["win", "linux", "osx"].forEach {
+        downloadOne("https://github.com/discordapp/discord-rpc/releases/download/v$discord_rpc_version/discord-rpc-${it}.zip", "discord-rpc-${it}.zip")
     }
 }
 
 task expandDiscordRPC(type: Copy, dependsOn: dlDiscordRPC) {
     println("Expanding discord-rpc...")
-    def zipFile = file("tmp/discord-rpc-dl.zip")
-    def outputDir = "libsExt"
+    def outputDir = file("libsExt")
     delete outputDir
 
-    def extensions = ["dll", "so"]
+    def extensions = ["dll", "so", "dylib"]
     def map = [
             "win64-dynamic": "win32-x86-64",
-            "win32-dynamic": "win32-x86"
+            "win32-dynamic": "win32-x86",
+            "linux-dynamic": "linux-x86-64",
+            "osx-dynamic"  : "darwin"
     ]
 
-    from zipTree(zipFile)
+    from fileTree("tmp").collect { zipTree(it) }
     into outputDir
     eachFile { FileCopyDetails fcp ->
+        println("2 $fcp.relativePath")
         boolean accepted = false
         def split = fcp.name.split("\\.")
         if (split.any() && split.last() in extensions) for (entry in map) {
+            println("3 $fcp.relativePath")
             if (fcp.relativePath.pathString.contains(entry.key)) {
+                println("4 $fcp.relativePath")
                 fcp.relativePath = new RelativePath(true, entry.value, fcp.name)
+                println("5 $fcp.relativePath")
                 accepted = true
                 break
             }
