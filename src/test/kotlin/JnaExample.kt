@@ -52,6 +52,7 @@ fun main(args: Array<String>) {
 
     RPCHandler.ifConnectedOrLater {
         // This will be called immediately if we are connected, or as soon as we connect
+        println("Logged in as ${it.username}#${it.discriminator}")
         RPCHandler.updatePresence(presence)
     }
 

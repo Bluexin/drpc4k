@@ -67,7 +67,8 @@ object DiscordRpc {
      */
     fun Discord_Respond(userid: String, reply: DISCORD_REPLY) = Discord_Respond(userid, reply.ordinal)
 
-    @PublishedApi internal external fun Discord_Respond(userid: String, reply: Int /*DISCORD_REPLY_*/)
+    @PublishedApi
+    internal external fun Discord_Respond(userid: String, reply: Int /*DISCORD_REPLY_*/)
 
     init {
         Native.register(javaClass, "discord-rpc")
@@ -334,9 +335,9 @@ class DiscordEventHandlers() : Structure() {
         executeBatch(initializer)
     }
 
-    fun onReady(write: Boolean = true, body: () -> Unit) {
+    fun onReady(write: Boolean = true, body: (user: DiscordUser) -> Unit) {
         _ready = CallbackReference.getFunctionPointer(object : Callback {
-            fun invoke() = body()
+            fun invoke(user: DiscordUser) = body(user)
         })
         if (write && !batching) write()
     }
@@ -369,9 +370,9 @@ class DiscordEventHandlers() : Structure() {
         if (write && !batching) write()
     }
 
-    fun onJoinRequest(write: Boolean = true, body: (request: DiscordJoinRequest) -> Unit) {
+    fun onJoinRequest(write: Boolean = true, body: (request: DiscordUser) -> Unit) {
         _joinRequest = CallbackReference.getFunctionPointer(object : Callback {
-            fun invoke(request: DiscordJoinRequest) {
+            fun invoke(request: DiscordUser) {
                 body(request)
             }
         })
@@ -410,42 +411,60 @@ class DiscordEventHandlers() : Structure() {
 }
 
 /**
- * Join request structure.
+ * Discord user structure, used in Join request and Ready event.
  * The Ask to Join request persists for 30 seconds after the request is received.
  *
- * (typedef struct DiscordJoinRequest)
+ * (typedef struct User)
  */
-class DiscordJoinRequest : Structure() {
+class DiscordUser : Structure() {
 
     /**
      * the userId of the player asking to join
      *
-     * (char[24])
+     * snowflake (64bit int), turned into a ascii decimal string, at most 20 chars +1 null
+     * terminator = 21
+     * (char[32])
      */
     lateinit var userId: String
+        internal set
 
     /**
      * the username of the player asking to join
      *
-     * (char[48])
+     * 32 unicode glyphs is max name size => 4 bytes per glyph in the worst case, +1 for null
+     * terminator = 129
+     * (char[344])
      */
     lateinit var username: String
+        internal set
+
+    /**
+     *
+     *
+     * 4 decimal digits + 1 null terminator = 5
+     * char discriminator[8];
+     */
+    lateinit var discriminator: String
+        internal set
 
     /**
      * the avatar hash of the player asking to join—see [image formatting](https://discordapp.com/developers/docs/reference#image-formatting) for how to retrieve the image
      * can be an empty string if the user has not uploaded an avatar to Discord
      *
+     * optional 'a_' + md5 hex digest (32 bytes) + null terminator = 35
      * (char[128])
      */
     lateinit var avatar: String
+        internal set
 
     override fun getFieldOrder() = FIELD_ORDER
 
     private companion object {
         val FIELD_ORDER = listOf(
-        "userId",
-        "username",
-        "avatar"
+                "userId",
+                "username",
+                "discriminator",
+                "avatar"
         )
     }
 }

@@ -38,7 +38,7 @@ object RPCHandler {
      * Called when Discord Rich Presence is ready.
      */
     @Volatile
-    var onReady: () -> Unit = {}
+    var onReady: (user: DiscordUser) -> Unit = {}
 
     /**
      * Called when Discord Rich Presence gets disconnected.
@@ -68,7 +68,7 @@ object RPCHandler {
      * Called when Discord Rich Presence receives a join request.
      */
     @Volatile
-    var onJoinRequest: (request: DiscordJoinRequest) -> Unit = { _ -> }
+    var onJoinRequest: (request: DiscordUser) -> Unit = { _ -> }
 
     /**
      * Tries to connect the Discord Rich Presence Connection asynchronously.
@@ -135,15 +135,16 @@ object RPCHandler {
     fun finishPending() = runBlocking {
         if (connected.get()) throw IllegalStateException("Still connected!")
         runner?.join()
+
     }
 
     /**
      * Run [block] immediately if connected, otherwise run it upon connection.
      */
-    inline fun ifConnectedOrLater(crossinline block: () -> Unit) {
-        if (connected.get()) block()
+    inline fun ifConnectedOrLater(crossinline block: (DiscordUser) -> Unit) {
+        if (connected.get()) block(user)
         else onReady = {
-            block()
+            block(it)
         }
     }
 
@@ -154,11 +155,16 @@ object RPCHandler {
     var connected = AtomicBoolean(false)
         private set
 
+    @Volatile
+    lateinit var user: DiscordUser
+        private set
+
     private val handlers = DiscordEventHandlers {
         onReady {
             println("Let's Rock !")
+            user = it
             connected.set(true)
-            this@RPCHandler.onReady()
+            this@RPCHandler.onReady(it)
         }
         onDisconnected { errorCode, message ->
             println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
