@@ -2,7 +2,7 @@ group 'be.bluexin'
 version '0.1-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.0'
+    ext.kotlin_version = '1.2.40'
 
     repositories {
         mavenCentral()
@@ -23,7 +23,7 @@ repositories {
 
 // TODO: https://github.com/kotlin/kotlinx.serialization
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"

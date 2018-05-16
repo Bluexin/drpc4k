@@ -2,7 +2,7 @@ group 'be.bluexin'
 version "$version_number.$build_number"
 
 buildscript {
-    ext.kotlin_version = '1.2.0'
+    ext.kotlin_version = '1.2.40'
 
     repositories {
         mavenCentral()
