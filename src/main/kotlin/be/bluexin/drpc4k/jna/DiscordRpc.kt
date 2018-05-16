@@ -126,8 +126,10 @@ class DiscordRichPresence() : Structure() {
      * Helper method to set the game's duration.
      */
     fun setDuration(seconds: Long) {
-        startTimeStamp = System.currentTimeMillis() / 1000L
-        endTimeStamp = startTimeStamp + seconds
+        executeBatch {
+            startTimeStamp = System.currentTimeMillis() / 1000L
+            endTimeStamp = startTimeStamp + seconds
+        }
     }
 
     /**
@@ -481,8 +483,9 @@ abstract class Structure : com.sun.jna.Structure() {
 }
 
 inline fun <reified T : Structure> T.executeBatch(body: T.() -> Unit) {
+    val wasBatching = `access$batching`
     `access$batching` = true
     this.body()
-    `access$batching` = false
-    write()
+    `access$batching` = wasBatching
+    if (!wasBatching) write()
 }

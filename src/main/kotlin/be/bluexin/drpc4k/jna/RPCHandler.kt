@@ -22,6 +22,7 @@ package be.bluexin.drpc4k.jna
 import be.bluexin.drpc4k.jna.RPCHandler.onDisconnected
 import be.bluexin.drpc4k.jna.RPCHandler.onReady
 import kotlinx.coroutines.experimental.*
+import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -72,17 +73,21 @@ object RPCHandler {
 
     /**
      * Tries to connect the Discord Rich Presence Connection asynchronously.
+     * If already connected (or connecting), the connection will be reset.
      *
      * @param[clientId] your app's public ID, client_id, application_id, whatever you wanna call it
      * @param[autoRegister] whether Discord should register your app for automatic launch (untested! Probably broken because Java)
      * @param[steamId] your app's Steam ID, if any
      * @param[refreshRate] the rate at which this handler will run callbacks and send info to discord
-     * @throws [IllegalStateException] when already connected
      */
     fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
-        if (connected.get()) throw IllegalStateException("Already connected!")
-        runner = launch(CommonPool) {
+        if (connected.get() || runner != null) {
+            println("${LocalDateTime.now()}: Disconnecting")
+            disconnect()
+            finishPending()
+        }
 
+        runner = launch(CommonPool) {
             try {
                 DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
                 while (isActive) {
@@ -97,7 +102,8 @@ object RPCHandler {
                 connected.set(false)
                 try {
                     DiscordRpc.Discord_Shutdown()
-                } catch (e: Throwable) {}
+                } catch (e: Throwable) {
+                }
             }
         }
     }
@@ -122,7 +128,8 @@ object RPCHandler {
      * @throws [IllegalStateException] when not connected
      */
     fun disconnect() {
-        if (!connected.get() || runner == null) throw IllegalStateException("Not connected!")
+        if (!connected.get() && runner == null) throw IllegalStateException("Not connected!")
+        connected.set(false)
         runner?.cancel()
     }
 
@@ -135,16 +142,17 @@ object RPCHandler {
     fun finishPending() = runBlocking {
         if (connected.get()) throw IllegalStateException("Still connected!")
         runner?.join()
-
+        runner = null
+        DiscordRpc.Discord_Shutdown()
     }
 
     /**
      * Run [block] immediately if connected, otherwise run it upon connection.
      */
-    inline fun ifConnectedOrLater(crossinline block: (DiscordUser) -> Unit) {
-        if (connected.get()) block(user)
+    fun ifConnectedOrLater(block: suspend (DiscordUser) -> Unit) {
+        if (connected.get()) launch { block(user) }
         else onReady = {
-            block(it)
+            launch { block(it) }
         }
     }
 
@@ -168,12 +176,13 @@ object RPCHandler {
         }
         onDisconnected { errorCode, message ->
             println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
-            connected.set(true)
+            connected.set(false)
             runner?.cancel()
             this@RPCHandler.onDisconnected(errorCode, message)
         }
         onErrored { errorCode, message ->
-            println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
+            println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() }
+                    ?: "No message provided"})")
             connected.set(true)
             runner?.cancel()
             this@RPCHandler.onErrored(errorCode, message)

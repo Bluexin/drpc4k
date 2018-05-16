@@ -19,6 +19,8 @@
 
 import be.bluexin.drpc4k.jna.DiscordRichPresence
 import be.bluexin.drpc4k.jna.RPCHandler
+import kotlinx.coroutines.experimental.delay
+import java.time.LocalDateTime
 import java.util.*
 
 fun main(args: Array<String>) {
@@ -33,6 +35,7 @@ fun main(args: Array<String>) {
 
     // Connect using the client ID
     RPCHandler.connect(args[0])
+    println("${LocalDateTime.now()}: Connecting")
 
     // Let's build our awesome presence
     val presence = DiscordRichPresence {
@@ -52,7 +55,8 @@ fun main(args: Array<String>) {
 
     RPCHandler.ifConnectedOrLater {
         // This will be called immediately if we are connected, or as soon as we connect
-        println("Logged in as ${it.username}#${it.discriminator}")
+        println("${LocalDateTime.now()}: Logged in as ${it.username}#${it.discriminator}")
+        delay(2000)
         RPCHandler.updatePresence(presence)
     }
 
