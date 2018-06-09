@@ -82,7 +82,7 @@ object RPCHandler {
      */
     fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
         if (connected.get() || runner != null) {
-            println("${LocalDateTime.now()}: Disconnecting")
+            System.err.println("${LocalDateTime.now()}: Disconnecting")
             disconnect()
             finishPending()
         }
@@ -169,19 +169,18 @@ object RPCHandler {
 
     private val handlers = DiscordEventHandlers {
         onReady {
-            println("Let's Rock !")
             user = it
             connected.set(true)
             this@RPCHandler.onReady(it)
         }
         onDisconnected { errorCode, message ->
-            println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
+            System.err.println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected.set(false)
             runner?.cancel()
             this@RPCHandler.onDisconnected(errorCode, message)
         }
         onErrored { errorCode, message ->
-            println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() }
+            System.err.println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() }
                     ?: "No message provided"})")
             connected.set(true)
             runner?.cancel()
