@@ -27,6 +27,11 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"
+    
+    compile "org.slf4j:slf4j-api:1.7.25"
+    compile "io.github.microutils:kotlin-logging:1.6.10"
+    runtime "org.slf4j:slf4j-simple:1.7.25"
+    
     shade "net.java.dev.jna:jna:4.5.0"
     shadeInPlace files("libs")
     shadeInPlace files("libsExt") {

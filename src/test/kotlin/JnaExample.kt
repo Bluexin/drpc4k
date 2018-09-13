@@ -20,22 +20,24 @@
 import be.bluexin.drpc4k.jna.DiscordRichPresence
 import be.bluexin.drpc4k.jna.RPCHandler
 import kotlinx.coroutines.experimental.delay
-import java.time.LocalDateTime
+import mu.KotlinLogging
 import java.util.*
+
+private val logger = KotlinLogging.logger {  }
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
-        println("Missing Client ID")
+        logger.error("Missing Client ID")
         return
     }
 
     // Setting up error/disconnection callbacks
-    RPCHandler.onErrored = { errorCode, message -> System.err.println("$errorCode = $message") }
-    RPCHandler.onDisconnected = { errorCode, message -> println("${if (errorCode != 0) "$errorCode = " else ""}$message") }
+    RPCHandler.onErrored = { errorCode, message -> logger.error("$errorCode = $message") }
+    RPCHandler.onDisconnected = { errorCode, message -> logger.warn("${if (errorCode != 0) "$errorCode = " else ""}$message") }
 
     // Connect using the client ID
     RPCHandler.connect(args[0])
-    println("${LocalDateTime.now()}: Connecting")
+    logger.info("Connecting")
 
     // Let's build our awesome presence
     val presence = DiscordRichPresence {
@@ -55,16 +57,16 @@ fun main(args: Array<String>) {
 
     RPCHandler.ifConnectedOrLater {
         // This will be called immediately if we are connected, or as soon as we connect
-        println("${LocalDateTime.now()}: Logged in as ${it.username}#${it.discriminator}")
+        logger.info("Logged in as ${it.username}#${it.discriminator}")
         delay(2000)
         RPCHandler.updatePresence(presence)
     }
 
     // "playing the game" ;p
-    println("Starting to sleep...")
+    logger.info("Starting to sleep...")
     Thread.sleep(120000)
 
-    println("Done, disconnecting")
+    logger.info("Done, disconnecting")
     if (RPCHandler.connected.get()) RPCHandler.disconnect()
 
     // Making sure everything is done.
