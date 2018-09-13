@@ -1,27 +1,18 @@
+plugins {
+    id "java"
+    id "maven"
+    id "org.jetbrains.kotlin.jvm" version "1.2.61"
+}
+
 group 'be.bluexin'
 version "$version_number.$build_number"
 
-buildscript {
-    ext.kotlin_version = '1.2.40'
-
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
-apply plugin: 'java'
-apply plugin: 'kotlin'
-apply plugin: 'maven'
-
 sourceCompatibility = 1.8
-//sourceCompatibility = 1.9
+
+ext.discord_rpc_version = "3.3.0"
 
 repositories {
     jcenter()
-    mavenCentral()
 }
 
 configurations {
@@ -31,10 +22,8 @@ configurations {
     compile.extendsFrom shadeInPlace
 }
 
-ext.discord_rpc_version = "3.3.0"
-
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"
@@ -45,17 +34,9 @@ dependencies {
     }
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-kotlin {
-    experimental {
-        coroutines "enable"
-    }
-}
+compileKotlin.kotlinOptions.jvmTarget = "1.8"
+compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
+kotlin.experimental.coroutines "enable"
 
 task sourceJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
@@ -78,10 +59,6 @@ jar {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.2.1'
-}
-
 uploadArchives {
     if (System.getenv('REPO_PWD') != null) {
         repositories.mavenDeployer {
@@ -89,11 +66,7 @@ uploadArchives {
                 authentication(userName: "travis", password: System.getenv('REPO_PWD'))
             }
         }
-    } /*else {
-            repositories.mavenDeployer {
-                repository(url: "file://" + (System.getenv("local_maven") != null ? System.getenv("local_maven") : project.buildDir.toString() + "/libs/mvn"))
-            }
-    }*/
+    }
 }
 
 def downloadOne(String url, String filename) {
