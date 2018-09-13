@@ -22,18 +22,20 @@ package be.bluexin.drpc4k.jna
 import be.bluexin.drpc4k.jna.RPCHandler.onDisconnected
 import be.bluexin.drpc4k.jna.RPCHandler.onReady
 import kotlinx.coroutines.experimental.*
+import mu.KotlinLogging
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Handles the Discord Rich Presence Connection.
  * Replace the callbacks ([onReady], [onDisconnected], ...) with your own.
- * Please note that all callbacks will be run on the RPC Thread. Take extra care !
+ * Please note that all callbacks will be run on the RPC Thread!
  *
  * @author Bluexin
  */
 @Suppress("MemberVisibilityCanPrivate", "unused")
 object RPCHandler {
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Called when Discord Rich Presence is ready.
@@ -82,7 +84,7 @@ object RPCHandler {
      */
     fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
         if (connected.get() || runner != null) {
-            System.err.println("${LocalDateTime.now()}: Disconnecting")
+			logger.info("Disconnecting")
             disconnect()
             finishPending()
         }
@@ -174,14 +176,13 @@ object RPCHandler {
             this@RPCHandler.onReady(it)
         }
         onDisconnected { errorCode, message ->
-            System.err.println("dc :x #$errorCode  (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
+			logger.warn("Disconnexted: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected.set(false)
             runner?.cancel()
             this@RPCHandler.onDisconnected(errorCode, message)
         }
         onErrored { errorCode, message ->
-            System.err.println("Something somewhere went terribly wrong. #$errorCode (${message.takeIf { message.isNotEmpty() }
-                    ?: "No message provided"})")
+			logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected.set(true)
             runner?.cancel()
             this@RPCHandler.onErrored(errorCode, message)
