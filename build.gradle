@@ -30,7 +30,7 @@ dependencies {
     
     compile "org.slf4j:slf4j-api:1.7.25"
     compile "io.github.microutils:kotlin-logging:1.6.10"
-    runtime "org.slf4j:slf4j-simple:1.7.25"
+    runtimeOnly "org.slf4j:slf4j-simple:1.7.25"
     
     shade "net.java.dev.jna:jna:4.5.0"
     shadeInPlace files("libs")
