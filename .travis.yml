@@ -2,14 +2,19 @@ language: java
 install:
   -  chmod +x gradlew
   -  sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
+  - ./gradlew assemble
 script:
-  - ./gradlew build uploadArchives
+  - ./gradlew build
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.gradle
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
     - .gradle
     - gradle
 jdk:
-- oraclejdk8
+  - openjdk8
+after_success:
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew uploadArchives; fi
