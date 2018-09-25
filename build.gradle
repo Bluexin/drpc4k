@@ -4,8 +4,20 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "1.2.61"
 }
 
+def gitBranch() {
+    def branch = ''
+    def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
+    proc.in.eachLine { line -> branch = line }
+    proc.err.eachLine { line -> println line }
+    proc.waitFor()
+    branch
+}
+def branch = gitBranch()
+println("On branch $branch")
+if (branch == 'master') branch = '' else branch = "-$branch"
+
 group 'be.bluexin'
-version "$version_number.$build_number"
+version "$version_number.$build_number$branch"
 
 sourceCompatibility = 1.8
 
