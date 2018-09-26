@@ -1,7 +1,7 @@
 plugins {
-    id "maven"
     id "org.jetbrains.kotlin.jvm" version "1.2.61"
     id 'java-library'
+    id 'maven-publish'
 }
 
 def gitBranch() {
@@ -78,11 +78,25 @@ jar {
     }
 }
 
-uploadArchives {
-    if (System.getenv('REPO_PWD') != null) {
-        repositories.mavenDeployer {
-            repository(url: "http://maven.bluexin.be/repository/" + (((String) project.version).contains("SNAPSHOT") ? "snapshots" : "releases") + "/") {
-                authentication(userName: "travis", password: System.getenv('REPO_PWD'))
+publishing {
+    publications {
+        drpc4k(MavenPublication) {
+            from components.java
+            artifact sourceJar
+        }
+    }
+
+    repositories {
+        def remote = System.getenv('REPO_PWD') != null
+        maven {
+            def remoteURL = 'https://maven.bluexin.be/repository/' + (((String) project.version).contains('SNAPSHOT')? 'snapshots': 'releases')
+            def localURL = "file://${buildDir}/repo"
+            url = remote? remoteURL: localURL
+            if (remote) {
+                credentials(PasswordCredentials) {
+                    username = 'CI'
+                    password = System.getenv('REPO_PWD')
+                }
             }
         }
     }

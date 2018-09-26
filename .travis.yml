@@ -17,4 +17,4 @@ cache:
 jdk:
   - openjdk8
 after_success:
-  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew uploadArchives; fi
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish; fi
