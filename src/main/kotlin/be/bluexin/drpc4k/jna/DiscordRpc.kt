@@ -17,7 +17,7 @@
  * along with drpc4k.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("MemberVisibilityCanPrivate", "FunctionName", "PropertyName", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "FunctionName", "PropertyName", "unused")
 
 package be.bluexin.drpc4k.jna
 
@@ -74,6 +74,7 @@ object DiscordRpc {
         Native.register(javaClass, "discord-rpc")
     }
 
+    @Suppress("ClassName")
     enum class DISCORD_REPLY {
         DISCORD_REPLY_NO,
         DISCORD_REPLY_YES,

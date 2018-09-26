@@ -23,7 +23,6 @@ import be.bluexin.drpc4k.jna.RPCHandler.onDisconnected
 import be.bluexin.drpc4k.jna.RPCHandler.onReady
 import kotlinx.coroutines.experimental.*
 import mu.KotlinLogging
-import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
