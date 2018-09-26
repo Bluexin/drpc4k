@@ -1,7 +1,7 @@
 plugins {
-    id "java"
     id "maven"
     id "org.jetbrains.kotlin.jvm" version "1.2.61"
+    id 'java-library'
 }
 
 def gitBranch() {
@@ -29,24 +29,26 @@ repositories {
 
 configurations {
     shade
-    compile.extendsFrom shade
+    compileOnly.extendsFrom shade
+    testCompileOnly.extendsFrom shade
     shadeInPlace
-    compile.extendsFrom shadeInPlace
+    compileOnly.extendsFrom shadeInPlace
+    testCompileOnly.extendsFrom shadeInPlace
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3"
-    
-    compile "org.slf4j:slf4j-api:1.7.25"
-    compile "io.github.microutils:kotlin-logging:1.6.10"
-    runtimeOnly "org.slf4j:slf4j-simple:1.7.25"
     
     shade "net.java.dev.jna:jna:4.5.0"
     shadeInPlace files("libs")
     shadeInPlace files("libsExt") {
+    api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3'
+
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'io.github.microutils:kotlin-logging:1.6.10'
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
         builtBy 'expandDiscordRPC'
     }
 }
