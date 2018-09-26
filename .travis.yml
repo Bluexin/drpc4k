@@ -1,7 +1,7 @@
 language: java
 install:
-  -  chmod +x gradlew
-  -  sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
+  - chmod +x gradlew
+  - sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
   - ./gradlew assemble
 script:
   - ./gradlew build

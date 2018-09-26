@@ -2,3 +2,5 @@ libsExt/
 tmp/
 drpc4k.iml
 .idea/
+build/
+.gradle/

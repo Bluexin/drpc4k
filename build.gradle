@@ -1,7 +1,7 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.61"
     id 'java-library'
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.61'
 }
 
 def gitBranch() {
@@ -21,7 +21,7 @@ version "$version_number.$build_number$branch"
 
 sourceCompatibility = 1.8
 
-ext.discord_rpc_version = "3.3.0"
+ext.discord_rpc_version = '3.3.0'
 
 repositories {
     jcenter()
@@ -37,10 +37,6 @@ configurations {
 }
 
 dependencies {
-    
-    shade "net.java.dev.jna:jna:4.5.0"
-    shadeInPlace files("libs")
-    shadeInPlace files("libsExt") {
     api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3'
@@ -49,13 +45,17 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'io.github.microutils:kotlin-logging:1.6.10'
     implementation 'org.slf4j:slf4j-simple:1.7.25'
+
+    shade 'net.java.dev.jna:jna:4.5.0'
+    shadeInPlace files('libs')
+    shadeInPlace files('libsExt') {
         builtBy 'expandDiscordRPC'
     }
 }
 
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
-compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
-kotlin.experimental.coroutines "enable"
+compileKotlin.kotlinOptions.jvmTarget = '1.8'
+compileTestKotlin.kotlinOptions.jvmTarget = '1.8'
+kotlin.experimental.coroutines 'enable'
 
 task sourceJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
@@ -103,7 +103,7 @@ publishing {
 }
 
 def downloadOne(String url, String filename) {
-    file("tmp").mkdir()
+    file('tmp').mkdir()
     def connection = new URL(url).openConnection()
     connection.inputStream.withStream {
         file("tmp/$filename").bytes = it.bytes
@@ -112,36 +112,36 @@ def downloadOne(String url, String filename) {
 
 task dlDiscordRPC {
     println("Downloading discord-rpc v$discord_rpc_version...")
-    ["win", "linux", "osx"].forEach {
+    ['win', 'linux', 'osx'].forEach {
         downloadOne("https://github.com/discordapp/discord-rpc/releases/download/v$discord_rpc_version/discord-rpc-${it}.zip", "discord-rpc-${it}.zip")
     }
 }
 
 task expandDiscordRPC(type: Copy, dependsOn: dlDiscordRPC) {
-    println("Expanding discord-rpc...")
-    def outputDir = file("libsExt")
+    println('Expanding discord-rpc...')
+    def outputDir = file('libsExt')
     delete outputDir
 
-    def extensions = ["dll", "so", "dylib"]
+    def extensions = ['dll', 'so', 'dylib']
     def map = [
-            "win64-dynamic": "win32-x86-64",
-            "win32-dynamic": "win32-x86",
-            "linux-dynamic": "linux-x86-64",
-            "osx-dynamic"  : "darwin"
+        'win64-dynamic': 'win32-x86-64',
+        'win32-dynamic': 'win32-x86',
+        'linux-dynamic': 'linux-x86-64',
+        'osx-dynamic'  : 'darwin'
     ]
 
-    from fileTree("tmp").collect { zipTree(it) }
+    from fileTree('tmp').collect { zipTree(it) }
     into outputDir
     eachFile { FileCopyDetails fcp ->
-        println("2 $fcp.relativePath")
+        // println("2 $fcp.relativePath")
         boolean accepted = false
         def split = fcp.name.split("\\.")
         if (split.any() && split.last() in extensions) for (entry in map) {
-            println("3 $fcp.relativePath")
+            // println("3 $fcp.relativePath")
             if (fcp.relativePath.pathString.contains(entry.key)) {
-                println("4 $fcp.relativePath")
+                // println("4 $fcp.relativePath")
                 fcp.relativePath = new RelativePath(true, entry.value, fcp.name)
-                println("5 $fcp.relativePath")
+                // println("5 $fcp.relativePath")
                 accepted = true
                 break
             }
@@ -151,6 +151,6 @@ task expandDiscordRPC(type: Copy, dependsOn: dlDiscordRPC) {
     includeEmptyDirs = false
 
     doLast {
-        delete "tmp"
+        delete 'tmp'
     }
 }
