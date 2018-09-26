@@ -5,19 +5,22 @@ plugins {
 }
 
 def gitBranch() {
-    def branch = ''
-    def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
-    proc.in.eachLine { line -> branch = line }
-    proc.err.eachLine { line -> println line }
-    proc.waitFor()
-    branch
+    if (System.getenv('TRAVIS_BRANCH') != null) System.getenv('TRAVIS_BRANCH')
+    else {
+        def branch = ''
+        def proc = 'git rev-parse --abbrev-ref HEAD'.execute()
+        proc.in.eachLine { line -> branch = line }
+        proc.err.eachLine { line -> println line }
+        proc.waitFor()
+        branch
+    }
 }
 def branch = gitBranch()
 println("On branch $branch")
-if (branch == 'master') branch = '' else branch = "-$branch"
+if (branch == 'master') branch = '' else branch = "$branch-"
 
 group 'be.bluexin'
-version "$version_number.$build_number$branch"
+version "$branch$version_number.$build_number"
 
 sourceCompatibility = 1.8
 
