@@ -8,7 +8,7 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "1.2.61"
-    id("net.saliman.properties") version "1.4.6"
+//    id("net.saliman.properties") version "1.4.6"
 }
 
 fun gitBranch() =
