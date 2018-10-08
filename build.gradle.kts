@@ -10,7 +10,8 @@ plugins {
     kotlin("jvm") version "1.2.61"
 }
 
-val branch = System.getenv("TRAVIS_BRANCH") ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
+val branch = System.getenv("TRAVIS_BRANCH")
+        ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
 logger.info("On branch $branch")
 
 group = "be.bluexin"
@@ -101,14 +102,10 @@ publishing {
 fun downloadOne(url: String, filename: String) {
     file("tmp").mkdir()
     val connection = uri(url).toURL().openConnection()
-    connection.inputStream.use {
+    connection.inputStream.use { input ->
         file("tmp/$filename").outputStream().use { output ->
-            var r = it.read()
-            while (r >= 0) {
-                output.write(r)
-                r = it.read()
-            }
-        }
+            input.copyTo(output)
+        } // Note: don't switch this to method reference
     }
 }
 
