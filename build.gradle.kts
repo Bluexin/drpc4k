@@ -8,21 +8,13 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "1.2.61"
-//    id("net.saliman.properties") version "1.4.6"
 }
 
-fun gitBranch() =
-        if (System.getenv("TRAVIS_BRANCH") != null) System.getenv("TRAVIS_BRANCH")!!
-        else {
-            val r = "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath)
-            r.lineSequence().last()
-        }
-
-val branch = gitBranch()
+val branch = System.getenv("TRAVIS_BRANCH") ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
 logger.info("On branch $branch")
 
 group = "be.bluexin"
-version = "${if (branch == "master") "" else "$branch-"}${prop("version_number")}.${prop("build_number")}"
+version = "$branch-".takeUnless { branch == "master" }.orEmpty() + prop("version_number") + "." + prop("build_number")
 
 repositories {
     jcenter()
@@ -42,18 +34,17 @@ configurations {
 
 dependencies {
     api(kotlin("stdlib-jdk8"))
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.19.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.19.3")
+    api(coroutine("core"))
+    api(coroutine("jdk8"))
+    api(coroutine("nio"))
 
-    implementation("org.slf4j:slf4j-api:1.7.25")
+    implementation("org.slf4j:slf4j-api:${prop("slf4jVersion")}")
     implementation("io.github.microutils:kotlin-logging:1.6.10")
-    implementation("org.slf4j:slf4j-simple:1.7.25")
+    runtimeOnly("org.slf4j:slf4j-simple:${prop("slf4jVersion")}")
 
-    "shade"("net.java.dev.jna:jna:4.5.0")
-    "shadeInPlace"(files("libs"))
-    "shadeInPlace"(files("libsExt") {
+    shade("net.java.dev.jna:jna:4.5.0")
+    shadeInPlace(files("libs"))
+    shadeInPlace(files("libsExt") {
         builtBy("expandDiscordRPC")
     })
 }
@@ -61,14 +52,10 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
-        languageVersion = "1.2"
-        apiVersion = "1.2"
     }
 }
 
-kotlin {
-    experimental.coroutines = Coroutines.ENABLE
-}
+kotlin.experimental.coroutines = Coroutines.ENABLE
 
 val sourceJar by tasks.registering(Jar::class) {
     from(sourceSets["main"].allSource)
@@ -133,12 +120,11 @@ val dlDiscordRPC by tasks.registering {
 }
 
 val expandDiscordRPC by tasks.registering(Copy::class) {
-    dependsOn += dlDiscordRPC
+    dependsOn(dlDiscordRPC)
 
     logger.info("Expanding discord-rpc...")
     val outputDir = file("libsExt")
     outputDir.delete()
-    logger.warn("Output: $outputDir")
 
     val extensions = arrayOf("dll", "so", "dylib")
     val map = mapOf(
@@ -178,10 +164,10 @@ fun List<String>.execute(wd: String? = null, ignoreExitCode: Boolean = false): S
             .also { pb -> wd?.let { pb.directory(File(it)) } }
             .start()
     var result = ""
-    val errReader = thread { process.errorStream.bufferedReader().forEachLine { logger.info(it) } }
+    val errReader = thread { process.errorStream.bufferedReader().forEachLine { logger.error(it) } }
     val outReader = thread {
         process.inputStream.bufferedReader().forEachLine { line ->
-            logger.info(line)
+            logger.debug(line)
             result += line
         }
     }
@@ -197,3 +183,12 @@ fun hasProp(name: String): Boolean = extra.has(name)
 fun prop(name: String): String =
         extra.properties[name] as? String
                 ?: error("Property `$name` is not defined in gradle.properties")
+
+fun DependencyHandler.coroutine(module: String): Any =
+        "org.jetbrains.kotlinx:kotlinx-coroutines-$module:${prop("coroutinesVersion")}"
+
+fun DependencyHandler.shade(dependencyNotation: Any): Dependency? =
+        add("shade", dependencyNotation)
+
+fun DependencyHandler.shadeInPlace(dependencyNotation: Any): Dependency? =
+        add("shadeInPlace", dependencyNotation)
