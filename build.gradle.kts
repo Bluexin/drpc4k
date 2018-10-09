@@ -1,3 +1,4 @@
+import de.undercouch.gradle.tasks.download.Download
 import org.gradle.api.tasks.bundling.Jar
 import kotlin.concurrent.thread
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -8,6 +9,7 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "1.2.61"
+    id("de.undercouch.download") version "3.4.3"
 }
 
 val branch = System.getenv("TRAVIS_BRANCH")
@@ -99,25 +101,24 @@ publishing {
     }
 }
 
-fun downloadOne(url: String, filename: String) {
-    file("tmp").mkdir()
-    val connection = uri(url).toURL().openConnection()
-    connection.inputStream.use { input ->
-        file("tmp/$filename").outputStream().use { output ->
-            input.copyTo(output)
-        } // Note: don't switch this to method reference
-    }
-}
+val discordVersion = prop("discord_rpc_version")
+val discordDownloadFolder = "$buildDir/download/discord/$discordVersion"
 
 val dlDiscordRPC by tasks.registering {
-    logger.info("Downloading discord-rpc v${prop("discord_rpc_version")}...")
+    logger.info("Downloading discord-rpc v$discordVersion...")
     arrayOf("win", "linux", "osx").forEach {
-        downloadOne("https://github.com/discordapp/discord-rpc/releases/download/v${prop("discord_rpc_version")}/discord-rpc-$it.zip", "discord-rpc-$it.zip")
+        val dlCurrent by tasks.register<Download>("download-$it") {
+            src("https://github.com/discordapp/discord-rpc/releases/download/v$discordVersion/discord-rpc-$it.zip")
+            dest("$discordDownloadFolder/discord-rpc-$it.zip")
+            overwrite(false)
+        }
+        outputs.files(dlCurrent.outputFiles)
+        dependsOn(dlCurrent)
     }
 }
 
 val expandDiscordRPC by tasks.registering(Copy::class) {
-    dependsOn(dlDiscordRPC)
+    inputs.files(dlDiscordRPC.get().outputs.files)
 
     logger.info("Expanding discord-rpc...")
     val outputDir = file("libsExt")
@@ -131,9 +132,7 @@ val expandDiscordRPC by tasks.registering(Copy::class) {
             "osx-dynamic" to "darwin"
     )
 
-    val tmp = file("tmp")
-
-    from(fileTree(tmp).map { logger.info("Zip: $it"); zipTree(it) })
+    from(inputs.files.map { logger.info("Zip: $it"); zipTree(it) })
     eachFile {
         var accepted = false
         val split = name.split('.')
