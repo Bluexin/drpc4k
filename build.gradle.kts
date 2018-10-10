@@ -60,7 +60,8 @@ val sourceJar by tasks.registering(Jar::class) {
     classifier = "sources"
 }
 
-tasks.withType<Jar> {
+val jar : Jar by tasks
+jar.apply {
     for (dep in shade) {
         from(zipTree(dep)) {
             exclude("META-INF", "META-INF/**")
