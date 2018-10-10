@@ -23,17 +23,11 @@ repositories {
     jcenter()
 }
 
-configurations {
-    arrayOf(
-            "shade",
-            "shadeInPlace"
-    ).forEach {
-        create(it) {
-            get("compileOnly").extendsFrom(this)
-            get("testCompileOnly").extendsFrom(this)
-        }
-    }
-}
+val shade by configurations.creating
+val shadeInPlace by configurations.creating
+
+configurations.compileOnly.extendsFrom(shade, shadeInPlace)
+configurations.testCompileOnly.extendsFrom(shade, shadeInPlace)
 
 dependencies {
     api(kotlin("stdlib-jdk8"))
@@ -67,12 +61,12 @@ val sourceJar by tasks.registering(Jar::class) {
 }
 
 tasks.withType<Jar> {
-    for (dep in configurations["shade"]) {
-        from(project.zipTree(dep)) {
+    for (dep in shade) {
+        from(zipTree(dep)) {
             exclude("META-INF", "META-INF/**")
         }
     }
-    for (dep in configurations["shadeInPlace"]) {
+    for (dep in shadeInPlace) {
         from(dep)
     }
 }
@@ -182,9 +176,3 @@ fun prop(name: String): String =
 
 fun DependencyHandler.coroutine(module: String): Any =
         "org.jetbrains.kotlinx:kotlinx-coroutines-$module:${prop("coroutinesVersion")}"
-
-fun DependencyHandler.shade(dependencyNotation: Any): Dependency? =
-        add("shade", dependencyNotation)
-
-fun DependencyHandler.shadeInPlace(dependencyNotation: Any): Dependency? =
-        add("shadeInPlace", dependencyNotation)
