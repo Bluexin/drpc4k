@@ -1,15 +1,15 @@
+import com.jfrog.bintray.gradle.BintrayExtension
 import de.undercouch.gradle.tasks.download.Download
-import org.gradle.api.tasks.bundling.Jar
-import kotlin.concurrent.thread
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.InputStream
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import kotlin.concurrent.thread
 
 plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm") version "1.2.61"
     id("de.undercouch.download") version "3.4.3"
+    id("com.jfrog.bintray") version "1.8.4"
 }
 
 val branch = System.getenv("TRAVIS_BRANCH")
@@ -18,6 +18,7 @@ logger.info("On branch $branch")
 
 group = "be.bluexin"
 version = "$branch-".takeUnless { branch == "master" }.orEmpty() + prop("version_number") + "." + prop("build_number")
+description = "Bringing Discord-RPC to Kotlin"
 
 repositories {
     jcenter()
@@ -60,7 +61,7 @@ val sourceJar by tasks.registering(Jar::class) {
     classifier = "sources"
 }
 
-val jar : Jar by tasks
+val jar: Jar by tasks
 jar.apply {
     for (dep in shade) {
         from(zipTree(dep)) {
@@ -73,11 +74,9 @@ jar.apply {
 }
 
 publishing {
-    publications {
-        register("drpc4k", MavenPublication::class.java) {
-            from(components["java"])
-            artifact(sourceJar.get())
-        }
+    publications.register("publication", MavenPublication::class) {
+        from(components["java"])
+        artifact(sourceJar.get())
     }
 
     repositories {
@@ -95,6 +94,7 @@ publishing {
         }
     }
 }
+val publication by publishing.publications
 
 val discordVersion = prop("discord_rpc_version")
 val discordDownloadFolder = "$buildDir/download/discord/$discordVersion"
@@ -110,6 +110,26 @@ val dlDiscordRPC by tasks.registering {
         outputs.files(dlCurrent.outputFiles)
         dependsOn(dlCurrent)
     }
+}
+
+bintray {
+    user = prop("bintrayUser")
+    key = prop("bintrayApiKey")
+    publish = true
+    override = true
+    setPublications(publication.name)
+    pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
+        repo = "bluexin"
+        name = project.name
+        userOrg = "bluexin"
+        websiteUrl = "https://github.com/Bluexin/drpc4k"
+        githubRepo = "Bluexin/drpc4k"
+        vcsUrl = "https://github.com/Bluexin/drpc4k"
+        issueTrackerUrl = "https://github.com/Bluexin/drpc4k/issues"
+        desc = project.description
+        setLabels("kotlin", "discord")
+        setLicenses("GPL-3.0")
+    })
 }
 
 val expandDiscordRPC by tasks.registering(Copy::class) {
@@ -171,9 +191,7 @@ fun List<String>.execute(wd: String? = null, ignoreExitCode: Boolean = false): S
 
 fun hasProp(name: String): Boolean = extra.has(name)
 
-fun prop(name: String): String =
-        extra.properties[name] as? String
-                ?: error("Property `$name` is not defined in gradle.properties")
+fun prop(name: String): String? = extra.properties[name] as? String
 
 fun DependencyHandler.coroutine(module: String): Any =
         "org.jetbrains.kotlinx:kotlinx-coroutines-$module:${prop("coroutinesVersion")}"
