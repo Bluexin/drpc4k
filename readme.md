@@ -1,7 +1,8 @@
 # drpc4k
 [![Build Status](https://travis-ci.org/Bluexin/drpc4k.svg?branch=master)](https://travis-ci.org/Bluexin/drpc4k)
+[ ![Bintray](https://api.bintray.com/packages/bluexin/bluexin/drpc4k/images/download.svg) ](https://bintray.com/bluexin/bluexin/drpc4k/_latestVersion)
 
-drpc4k (discord-rpc for Kotlin) is a project aiming to provide [Kotlin](https://kotlinlang.org) bindings for [discord-rpc](https://github.com/discordapp/discord-rpc)
+drpc4k (discord-rpc for Kotlin) is a project aiming to provide [Kotlin](https://kotlinlang.org) bindings for [discord-rpc](https://github.com/discordapp/discord-rpc).
 
 ## Current State of this project
 
@@ -12,17 +13,16 @@ I plan on making a pure Kotlin one too though.
 
 ## Using this lib
 
-Either build from sources and add the lib the way you'd do for any other lib, or using Maven :
-
-Add the url `http://maven.bluexin.be/repository/snapshots/` to your repositories (or `/releases/` for release version once one comes out).
+### Maven dependency
+Add the url [https://dl.bintray.com/bluexin/bluexin/](https://dl.bintray.com/bluexin/bluexin/) to your repositories (waiting on jcenter approval).
+Snapshots will be published to [https://oss.jfrog.org](https://oss.jfrog.org) after jcenter approval.
 
 Ex, using gradle :
 ```groovy
 repositories {
     /* other repos, like jcenter() or mavenCentral() */
     maven {
-        url = "http://maven.bluexin.be/repository/releases/" // For releases
-        url = "http://maven.bluexin.be/repository/snapshots/" // For snapshots
+        url = "https://dl.bintray.com/bluexin/bluexin/"
     }
 }
 ```
@@ -31,13 +31,24 @@ Then add the actual maven dependency :
 ```groovy
 dependencies {
     /* project dependencies */
-    compile "be.bluexin:drpc4k:<version>-SNAPSHOT"
-    // Replace <version> with appropriate version number,
-    // remove SNAPSHOT once releases come out.
+    compile "be.bluexin:drpc4k:<version>"
+    // Replace <version> with appropriate version number
 }
 ```
-(current latest version number is 0.3)
-A list of versions for snapshot can be found [on my maven](https://maven.bluexin.be/repository/snapshots/be/bluexin/drpc4k/)
+Maven :
+```xml
+<dependency>
+  <groupId>be.bluexin</groupId>
+  <artifactId>drpc4k</artifactId>
+  <version>0.7</version>
+  <type>pom</type>
+</dependency>
+```
+(current latest version number is 0.7)
+A list of versions for snapshot can be found [on bintray](https://bintray.com/bluexin/bluexin/drpc4k).
+
+### Flat file
+Download from [Bintray](https://bintray.com/bluexin/bluexin/drpc4k/_latestVersion).
 
 ## Rich Presence
 
