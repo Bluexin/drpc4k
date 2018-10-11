@@ -14,16 +14,13 @@ I plan on making a pure Kotlin one too though.
 ## Using this lib
 
 ### Maven dependency
-Add the url [https://dl.bintray.com/bluexin/bluexin/](https://dl.bintray.com/bluexin/bluexin/) to your repositories (waiting on jcenter approval).
-Snapshots will be published to [https://oss.jfrog.org](https://oss.jfrog.org) after jcenter approval.
+Make sure you enabled `jcenter` repository.
+Snapshots will be published to [https://oss.jfrog.org](https://oss.jfrog.org) once I enable it.
 
-Ex, using gradle :
+Ex, using gradle (groovy or kts) :
 ```groovy
 repositories {
-    /* other repos, like jcenter() or mavenCentral() */
-    maven {
-        url = "https://dl.bintray.com/bluexin/bluexin/"
-    }
+    jcenter()
 }
 ```
 
@@ -31,8 +28,7 @@ Then add the actual maven dependency :
 ```groovy
 dependencies {
     /* project dependencies */
-    compile "be.bluexin:drpc4k:<version>"
-    // Replace <version> with appropriate version number
+    compile "be.bluexin:drpc4k:0.7"
 }
 ```
 Maven :
@@ -44,8 +40,7 @@ Maven :
   <type>pom</type>
 </dependency>
 ```
-(current latest version number is 0.7)
-A list of versions for snapshot can be found [on bintray](https://bintray.com/bluexin/bluexin/drpc4k).
+A list of versions can be found [on bintray](https://bintray.com/bluexin/bluexin/drpc4k).
 
 ### Flat file
 Download from [Bintray](https://bintray.com/bluexin/bluexin/drpc4k/_latestVersion).
