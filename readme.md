@@ -14,8 +14,8 @@ I plan on making a pure Kotlin one too though.
 ## Using this lib
 
 ### Maven dependency
-Make sure you enabled `jcenter` repository.
-Snapshots will be published to [https://oss.jfrog.org](https://oss.jfrog.org) once I enable it.
+Make sure you enabled `jcenter` repository for releases.
+For snapshots, please add [https://oss.jfrog.org/simple/libs-snapshot/be/bluexin/](https://oss.jfrog.org/simple/libs-snapshot/).
 
 Ex, using gradle (groovy or kts) :
 ```groovy
@@ -41,6 +41,7 @@ Maven :
 </dependency>
 ```
 A list of versions can be found [on bintray](https://bintray.com/bluexin/bluexin/drpc4k).
+Snapshot versions can be found on [OJO](https://oss.jfrog.org/artifactory/webapp/#/artifacts/browse/tree/General/oss-snapshot-local/be/bluexin/drpc4k).
 
 ### Flat file
 Download from [Bintray](https://bintray.com/bluexin/bluexin/drpc4k/_latestVersion).
