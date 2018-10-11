@@ -41,7 +41,7 @@ dependencies {
 
     implementation("org.slf4j:slf4j-api:${prop("slf4jVersion")}")
     implementation("io.github.microutils:kotlin-logging:1.6.10")
-    runtimeOnly("org.slf4j:slf4j-simple:${prop("slf4jVersion")}")
+    compileOnly("org.slf4j:slf4j-simple:${prop("slf4jVersion")}")
 
     shade("net.java.dev.jna:jna:4.5.0")
     shadeInPlace(files("libs"))
