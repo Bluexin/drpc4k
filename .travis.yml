@@ -18,3 +18,8 @@ jdk:
   - openjdk8
 after_success:
   - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish; fi
+deploy:
+  provider: script
+  script: ./gradlew artifactoryPublish -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY
+  on:
+    branch: master

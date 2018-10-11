@@ -1,7 +1,9 @@
 import com.jfrog.bintray.gradle.BintrayExtension
 import de.undercouch.gradle.tasks.download.Download
+import groovy.lang.GroovyObject
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import kotlin.concurrent.thread
 
 plugins {
@@ -10,6 +12,7 @@ plugins {
     kotlin("jvm") version "1.2.61"
     id("de.undercouch.download") version "3.4.3"
     id("com.jfrog.bintray") version "1.8.4"
+    id("com.jfrog.artifactory") version "4.7.5"
 }
 
 val branch = System.getenv("TRAVIS_BRANCH")
@@ -129,6 +132,22 @@ bintray {
         desc = project.description
         setLabels("kotlin", "discord")
         setLicenses("GPL-3.0")
+    })
+}
+
+artifactory {
+    setContextUrl("https://oss.jfrog.org")
+    publish(delegateClosureOf<PublisherConfig> {
+        repository(delegateClosureOf<GroovyObject> {
+            val targetRepoKey = if (project.version.toString().endsWith("-SNAPSHOT")) "oss-snapshot-local" else "oss-release-local"
+            setProperty("repoKey", targetRepoKey)
+            setProperty("username", prop("bintrayUser"))
+            setProperty("password", prop("bintrayApiKey"))
+            setProperty("maven", true)
+        })
+        defaults(delegateClosureOf<GroovyObject> {
+            invokeMethod("publications", publication.name)
+        })
     })
 }
 
