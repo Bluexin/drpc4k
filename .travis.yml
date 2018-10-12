@@ -4,7 +4,7 @@ install:
   - sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
   - ./gradlew assemble
 script:
-  - ./gradlew build -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD
+  - ./gradlew build -Pbranch=$TRAVIS_BRANCH
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
@@ -17,9 +17,9 @@ cache:
 jdk:
   - openjdk8
 after_success:
-  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish; fi
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD; fi
 deploy:
   provider: script
-  script: ./gradlew artifactoryPublish -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY
+  script: ./gradlew artifactoryPublish -Pbranch=$TRAVIS_BRANCH -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY
   on:
     branch: master
