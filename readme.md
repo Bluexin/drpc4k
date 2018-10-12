@@ -28,7 +28,7 @@ Then add the actual maven dependency :
 ```groovy
 dependencies {
     /* project dependencies */
-    compile "be.bluexin:drpc4k:0.7"
+    compile "be.bluexin:drpc4k:0.8"
 }
 ```
 Maven :
@@ -36,7 +36,7 @@ Maven :
 <dependency>
   <groupId>be.bluexin</groupId>
   <artifactId>drpc4k</artifactId>
-  <version>0.7</version>
+  <version>0.8</version>
   <type>pom</type>
 </dependency>
 ```
