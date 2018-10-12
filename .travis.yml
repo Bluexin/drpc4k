@@ -17,9 +17,4 @@ cache:
 jdk:
   - openjdk8
 after_success:
-  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD; fi
-deploy:
-  provider: script
-  script: ./gradlew artifactoryPublish -Pbranch=$TRAVIS_BRANCH -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY
-  on:
-    branch: master
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish artifactoryPublish -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY; fi
