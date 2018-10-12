@@ -82,7 +82,7 @@ publishing {
     }
 
     repositories {
-        val mavenPassword = prop("mavenPassword")
+        val mavenPassword = if (hasProp("local")) null else prop("mavenPassword")
         maven {
             val remoteURL = "https://maven.bluexin.be/repository/" + (if ((version as String).contains("SNAPSHOT")) "snapshots" else "releases")
             val localURL = "file://$buildDir/repo"
