@@ -15,8 +15,7 @@ plugins {
     id("com.jfrog.artifactory") version "4.7.5"
 }
 
-val branch = System.getenv("TRAVIS_BRANCH")
-        ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
+val branch = prop("branch") ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
 logger.info("On branch $branch")
 
 group = "be.bluexin"
@@ -83,15 +82,15 @@ publishing {
     }
 
     repositories {
-        val remote = System.getenv("REPO_PWD") != null
+        val mavenPassword = prop("mavenPassword")
         maven {
             val remoteURL = "https://maven.bluexin.be/repository/" + (if ((version as String).contains("SNAPSHOT")) "snapshots" else "releases")
             val localURL = "file://$buildDir/repo"
-            url = uri(if (remote) remoteURL else localURL)
-            if (remote) {
+            url = uri(if (mavenPassword != null) remoteURL else localURL)
+            if (mavenPassword != null) {
                 credentials(PasswordCredentials::class.java) {
-                    username = "CI"
-                    password = System.getenv("REPO_PWD")
+                    username = prop("mavenUser")
+                    password = mavenPassword
                 }
             }
         }
