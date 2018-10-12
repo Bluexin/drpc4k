@@ -1,10 +1,10 @@
 language: java
 install:
-  -  chmod +x gradlew
-  -  sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
+  - chmod +x gradlew
+  - sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
   - ./gradlew assemble
 script:
-  - ./gradlew build
+  - ./gradlew build -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
@@ -17,4 +17,9 @@ cache:
 jdk:
   - openjdk8
 after_success:
-  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew uploadArchives; fi
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish; fi
+deploy:
+  provider: script
+  script: ./gradlew artifactoryPublish -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY
+  on:
+    branch: master
