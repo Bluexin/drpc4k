@@ -39,10 +39,10 @@ dependencies {
     api(coroutine("nio"))
 
     implementation("org.slf4j:slf4j-api:${prop("slf4jVersion")}")
-    implementation("io.github.microutils:kotlin-logging:1.6.10")
+    implementation("io.github.microutils:kotlin-logging:${prop("kotlinLoggingVersion")}")
     compileOnly("org.slf4j:slf4j-simple:${prop("slf4jVersion")}")
 
-    shade("net.java.dev.jna:jna:4.5.0")
+    shade("net.java.dev.jna:jna:${prop("jnaVersion")}")
     shadeInPlace(files("libs"))
     shadeInPlace(files("libsExt") {
         builtBy("expandDiscordRPC")
