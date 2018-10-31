@@ -9,10 +9,10 @@ import kotlin.concurrent.thread
 plugins {
     `java-library`
     `maven-publish`
-    kotlin("jvm") version "1.2.61"
-    id("de.undercouch.download") version "3.4.3"
-    id("com.jfrog.bintray") version "1.8.4"
-    id("com.jfrog.artifactory") version "4.7.5"
+    kotlin("jvm")
+    id("de.undercouch.download")
+    id("com.jfrog.bintray")
+    id("com.jfrog.artifactory")
 }
 
 val branch = prop("branch") ?: "git rev-parse --abbrev-ref HEAD".execute(rootDir.absolutePath).lines().last()
