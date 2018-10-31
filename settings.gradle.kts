@@ -10,7 +10,7 @@ val artifactory_version: String by settings
 pluginManagement {
     resolutionStrategy {
         eachPlugin {
-            println("Requested: " + requested.id.id)
+            logger.debug("Requested: " + requested.id.id)
             when (requested.id.id) {
                 "de.undercouch.download" -> useVersion(undercouch_dl_version)
                 "com.jfrog.bintray" -> useVersion(bintray_version)
