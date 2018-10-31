@@ -21,9 +21,11 @@ package be.bluexin.drpc4k.jna
 
 import be.bluexin.drpc4k.jna.RPCHandler.onDisconnected
 import be.bluexin.drpc4k.jna.RPCHandler.onReady
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicBoolean
+
+// TODO: Move all @Volatile & java Atomic usages to kotlinx.atomicfu
 
 /**
  * Handles the Discord Rich Presence Connection.
@@ -81,29 +83,31 @@ object RPCHandler {
      * @param[steamId] your app's Steam ID, if any
      * @param[refreshRate] the rate at which this handler will run callbacks and send info to discord
      */
-    fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
+    suspend fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
         if (connected.get() || runner != null) {
-			logger.info("Disconnecting")
+            logger.info("Disconnecting")
             disconnect()
             finishPending()
         }
 
-        runner = launch(CommonPool) {
-            try {
-                DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
-                while (isActive) {
-                    DiscordRpc.Discord_RunCallbacks()
-                    delay(refreshRate)
-                }
-            } catch (e: CancellationException) {
-                onDisconnected(0, "Discord RPC Thread closed.")
-            } catch (e: Throwable) {
-                onErrored(-1, "Unknown error caused by: ${e.message}")
-            } finally {
-                connected.set(false)
+        runner = coroutineScope {
+            launch {
                 try {
-                    DiscordRpc.Discord_Shutdown()
+                    DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
+                    while (isActive) {
+                        DiscordRpc.Discord_RunCallbacks()
+                        delay(refreshRate)
+                    }
+                } catch (e: CancellationException) {
+                    onDisconnected(0, "Discord RPC Thread closed.")
                 } catch (e: Throwable) {
+                    onErrored(-1, "Unknown error caused by: ${e.message}")
+                } finally {
+                    connected.set(false)
+                    try {
+                        DiscordRpc.Discord_Shutdown()
+                    } catch (e: Throwable) {
+                    }
                 }
             }
         }
@@ -114,11 +118,13 @@ object RPCHandler {
      *
      * @throws [IllegalStateException] when not connected
      */
-    fun updatePresence(presence: DiscordRichPresence) {
+    suspend fun updatePresence(presence: DiscordRichPresence) {
         if (!connected.get() || runner == null) throw IllegalStateException("Not connected!")
 
-        launch(runner!!) {
-            DiscordRpc.Discord_UpdatePresence(presence)
+        coroutineScope {
+            launch(runner!!) {
+                DiscordRpc.Discord_UpdatePresence(presence)
+            }
         }
     }
 
@@ -150,10 +156,12 @@ object RPCHandler {
     /**
      * Run [block] immediately if connected, otherwise run it upon connection.
      */
-    fun ifConnectedOrLater(block: suspend (DiscordUser) -> Unit) {
-        if (connected.get()) launch { block(user) }
-        else onReady = {
-            launch { block(it) }
+    suspend fun ifConnectedOrLater(block: suspend (DiscordUser) -> Unit) {
+        coroutineScope {
+            if (connected.get()) launch { block(user) }
+            else onReady = {
+                launch { block(it) }
+            }
         }
     }
 
@@ -175,13 +183,14 @@ object RPCHandler {
             this@RPCHandler.onReady(it)
         }
         onDisconnected { errorCode, message ->
-			logger.warn("Disconnexted: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
+            logger.warn("Disconnexted: #$errorCode (${message.takeIf { message.isNotEmpty() }
+                    ?: "No message provided"})")
             connected.set(false)
             runner?.cancel()
             this@RPCHandler.onDisconnected(errorCode, message)
         }
         onErrored { errorCode, message ->
-			logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
+            logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected.set(true)
             runner?.cancel()
             this@RPCHandler.onErrored(errorCode, message)

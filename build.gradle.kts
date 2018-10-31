@@ -36,7 +36,6 @@ dependencies {
     api(kotlin("stdlib-jdk8"))
     api(coroutine("core"))
     api(coroutine("jdk8"))
-    api(coroutine("nio"))
 
     implementation("org.slf4j:slf4j-api:${prop("slf4jVersion")}")
     implementation("io.github.microutils:kotlin-logging:${prop("kotlinLoggingVersion")}")
@@ -54,8 +53,6 @@ tasks.withType<KotlinCompile> {
         jvmTarget = "1.8"
     }
 }
-
-kotlin.experimental.coroutines = Coroutines.ENABLE
 
 val sourceJar by tasks.registering(Jar::class) {
     from(sourceSets["main"].allSource)

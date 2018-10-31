@@ -19,16 +19,17 @@
 
 import be.bluexin.drpc4k.jna.DiscordRichPresence
 import be.bluexin.drpc4k.jna.RPCHandler
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import java.util.*
+import kotlin.random.Random
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
-fun main(args: Array<String>) {
+fun main(args: Array<String>) = runBlocking {
     if (args.isEmpty()) {
         logger.error("Missing Client ID")
-        return
+        return@runBlocking
     }
 
     // Setting up error/disconnection callbacks
@@ -44,7 +45,7 @@ fun main(args: Array<String>) {
         details = "Raid: Kill Migas"
         state = "Recruiting"
         partyId = "Awesome Party ID"
-        partySize = Random().nextInt(20) + 1
+        partySize = Random.nextInt(20) + 1
         partyMax = 24
         setDuration(1200L)
         smallImageKey = "ia_sakura_water"
@@ -64,7 +65,7 @@ fun main(args: Array<String>) {
 
     // "playing the game" ;p
     logger.info("Starting to sleep...")
-    Thread.sleep(120000)
+    delay(120000)
 
     logger.info("Done, disconnecting")
     if (RPCHandler.connected.get()) RPCHandler.disconnect()
