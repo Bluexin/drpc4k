@@ -83,31 +83,29 @@ object RPCHandler {
      * @param[steamId] your app's Steam ID, if any
      * @param[refreshRate] the rate at which this handler will run callbacks and send info to discord
      */
-    suspend fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
+    fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
         if (connected.get() || runner != null) {
             logger.info("Disconnecting")
             disconnect()
             finishPending()
         }
 
-        runner = coroutineScope {
-            launch {
+        runner = GlobalScope.launch {
+            try {
+                DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
+                while (isActive) {
+                    DiscordRpc.Discord_RunCallbacks()
+                    delay(refreshRate)
+                }
+            } catch (e: CancellationException) {
+                onDisconnected(0, "Discord RPC Thread closed.")
+            } catch (e: Throwable) {
+                onErrored(-1, "Unknown error caused by: ${e.message}")
+            } finally {
+                connected.set(false)
                 try {
-                    DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
-                    while (isActive) {
-                        DiscordRpc.Discord_RunCallbacks()
-                        delay(refreshRate)
-                    }
-                } catch (e: CancellationException) {
-                    onDisconnected(0, "Discord RPC Thread closed.")
+                    DiscordRpc.Discord_Shutdown()
                 } catch (e: Throwable) {
-                    onErrored(-1, "Unknown error caused by: ${e.message}")
-                } finally {
-                    connected.set(false)
-                    try {
-                        DiscordRpc.Discord_Shutdown()
-                    } catch (e: Throwable) {
-                    }
                 }
             }
         }
@@ -118,13 +116,11 @@ object RPCHandler {
      *
      * @throws [IllegalStateException] when not connected
      */
-    suspend fun updatePresence(presence: DiscordRichPresence) {
+    fun updatePresence(presence: DiscordRichPresence) {
         if (!connected.get() || runner == null) throw IllegalStateException("Not connected!")
 
-        coroutineScope {
-            launch(runner!!) {
-                DiscordRpc.Discord_UpdatePresence(presence)
-            }
+        GlobalScope.launch(runner!!) {
+            DiscordRpc.Discord_UpdatePresence(presence)
         }
     }
 
@@ -156,12 +152,10 @@ object RPCHandler {
     /**
      * Run [block] immediately if connected, otherwise run it upon connection.
      */
-    suspend fun ifConnectedOrLater(block: suspend (DiscordUser) -> Unit) {
-        coroutineScope {
-            if (connected.get()) launch { block(user) }
-            else onReady = {
-                launch { block(it) }
-            }
+    fun ifConnectedOrLater(block: suspend (DiscordUser) -> Unit) {
+        if (connected.get()) GlobalScope.launch { block(user) }
+        else onReady = {
+            block(it)
         }
     }
 
