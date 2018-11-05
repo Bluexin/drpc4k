@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @author Bluexin
  */
-@Suppress("MemberVisibilityCanPrivate", "unused")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 object RPCHandler {
     private val logger = KotlinLogging.logger {}
 

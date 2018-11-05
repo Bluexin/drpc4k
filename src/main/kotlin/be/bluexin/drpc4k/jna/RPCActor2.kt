@@ -28,6 +28,7 @@ import mu.KotlinLogging
 fun CoroutineScope.rpcActor2() = RPCActor2()(this)
 
 @ExperimentalCoroutinesApi
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class RPCActor2 {
     private val logger = KotlinLogging.logger { }
 
