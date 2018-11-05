@@ -55,6 +55,13 @@ fun main(args: Array<String>) = runBlocking {
     rpc.send(SetOnReady {
         logger.info("Logged in as ${it.username}#${it.discriminator}")
     })
+    rpc.send(SetOnDisconnected { errorCode, message ->
+        logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
+                ?: "No message provided"})")
+    })
+    rpc.send(SetOnErrored { errorCode, message ->
+        logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
+    })
     delay(500)
     delay(10000)
 

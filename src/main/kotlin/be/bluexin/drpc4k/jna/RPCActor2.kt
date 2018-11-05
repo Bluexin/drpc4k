@@ -115,19 +115,19 @@ class RPCActor2 {
         onJoinRequest = callback
     }
 
-    fun isConnected() : Deferred<Boolean> = CompletableDeferred<Boolean>().also {
+    fun isConnected(): Deferred<Boolean> = CompletableDeferred<Boolean>().also {
         this.act { it.complete(this.connected) }
     }
 
-    suspend fun isConnectedS() : Deferred<Boolean> = CompletableDeferred<Boolean>().also {
+    suspend fun isConnectedS(): Deferred<Boolean> = CompletableDeferred<Boolean>().also {
         this.actS { it.complete(this.connected) }
     }
 
-    fun isInitialized() : Deferred<Boolean> = CompletableDeferred<Boolean>().also {
+    fun isInitialized(): Deferred<Boolean> = CompletableDeferred<Boolean>().also {
         this.act { it.complete(this.initialized) }
     }
 
-    suspend fun isInitializedS() : Deferred<Boolean> = CompletableDeferred<Boolean>().also {
+    suspend fun isInitializedS(): Deferred<Boolean> = CompletableDeferred<Boolean>().also {
         this.actS { it.complete(this.initialized) }
     }
 
@@ -169,10 +169,10 @@ class RPCActor2 {
                 delay(refreshRate)
             }
         } catch (e: CancellationException) {
-            onDisconnected(0, "Discord RPC Thread closed.")
         } catch (e: Throwable) {
             onErrored(-1, "Unknown error caused by: ${e.message}")
         } finally {
+            onDisconnected(0, "Discord RPC Thread closed.")
             connected = false
             try {
                 DiscordRpc.Discord_Shutdown()

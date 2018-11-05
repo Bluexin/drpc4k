@@ -70,10 +70,10 @@ private class RPCActor(
                 delay(refreshRate)
             }
         } catch (e: CancellationException) {
-            onDisconnected(0, "Discord RPC Thread closed.")
         } catch (e: Throwable) {
             onErrored(-1, "Unknown error caused by: ${e.message}")
         } finally {
+            onDisconnected(0, "Discord RPC Thread closed.")
             connected = false
             try {
                 DiscordRpc.Discord_Shutdown()
