@@ -22,9 +22,7 @@
 package be.bluexin.drpc4k.jna
 
 import com.sun.jna.Callback
-import com.sun.jna.CallbackReference
 import com.sun.jna.Native
-import com.sun.jna.Pointer
 
 /**
  * Maps directly to discord-rpc.h
@@ -339,46 +337,46 @@ class DiscordEventHandlers() : Structure() {
     }
 
     fun onReady(write: Boolean = true, body: (user: DiscordUser) -> Unit) {
-        _ready = CallbackReference.getFunctionPointer(object : Callback {
+        _ready = object : Callback {
             fun invoke(user: DiscordUser) = body(user)
-        })
+        }
         if (write && !batching) write()
     }
 
     fun onDisconnected(write: Boolean = true, body: (errorCode: Int, message: String) -> Unit) {
-        _disconnected = CallbackReference.getFunctionPointer(object : Callback {
+        _disconnected = object : Callback {
             fun invoke(errorCode: Int, message: String) = body(errorCode, message)
-        })
+        }
         if (write && !batching) write()
     }
 
     fun onErrored(write: Boolean = true, body: (errorCode: Int, message: String) -> Unit) {
-        _errored = CallbackReference.getFunctionPointer(object : Callback {
+        _errored = object : Callback {
             fun invoke(errorCode: Int, message: String) = body(errorCode, message)
-        })
+        }
         if (write && !batching) write()
     }
 
     fun onJoinGame(write: Boolean = true, body: (joinSecret: String) -> Unit) {
-        _joinGame = CallbackReference.getFunctionPointer(object : Callback {
+        _joinGame = object : Callback {
             fun invoke(joinSecret: String) = body(joinSecret)
-        })
+        }
         if (write && !batching) write()
     }
 
     fun onSpectateGame(write: Boolean = true, body: (spectateSecret: String) -> Unit) {
-        _spectateGame = CallbackReference.getFunctionPointer(object : Callback {
+        _spectateGame = object : Callback {
             fun invoke(spectateSecret: String) = body(spectateSecret)
-        })
+        }
         if (write && !batching) write()
     }
 
     fun onJoinRequest(write: Boolean = true, body: (request: DiscordUser) -> Unit) {
-        _joinRequest = CallbackReference.getFunctionPointer(object : Callback {
+        _joinRequest = object : Callback {
             fun invoke(request: DiscordUser) {
                 body(request)
             }
-        })
+        }
         if (write && !batching) write()
     }
 
@@ -392,12 +390,12 @@ class DiscordEventHandlers() : Structure() {
         happens when you use the same secret for invite & spectate
      */
 
-    internal lateinit var _ready: Pointer
-    internal lateinit var _disconnected: Pointer
-    internal lateinit var _errored: Pointer
-    internal lateinit var _joinGame: Pointer
-    internal lateinit var _spectateGame: Pointer
-    internal lateinit var _joinRequest: Pointer
+    internal lateinit var _ready: Callback
+    internal lateinit var _disconnected: Callback
+    internal lateinit var _errored: Callback
+    internal lateinit var _joinGame: Callback
+    internal lateinit var _spectateGame: Callback
+    internal lateinit var _joinRequest: Callback
 
     override fun getFieldOrder() = FIELD_ORDER
 
