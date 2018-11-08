@@ -3,13 +3,15 @@ jdk:
   - openjdk8
 
 install:
+  - mkdir -p ~/.gradle && echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
   - sed -i 's:^[ \t]*build_number[ \t]*=\([ \t]*.*\)$:build_number=\1-SNAPSHOT:' gradle.properties
+  - ./gradlew assemble
 
 script:
-  - ./gradlew build --no-daemon
+  - ./gradlew build
 
 after_success:
-  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./gradlew publish artifactoryPublish -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY --daemon; fi
+  - test "$TRAVIS_PULL_REQUEST" == "false" && ./gradlew publish artifactoryPublish -Pbranch=$TRAVIS_BRANCH -PmavenPassword=$REPO_PWD -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_KEY
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
