@@ -20,7 +20,7 @@ val branch = prop("branch") ?: System.getenv("TRAVIS_BRANCH")
 logger.info("On branch $branch")
 
 group = "be.bluexin"
-version = branch.takeUnless { branch == "master" }.orEmpty() + prop("version_number") + "." + prop("build_number")
+version = "$branch-".takeUnless { branch == "master" }.orEmpty() + prop("version_number") + "." + prop("build_number")
 description = "Bringing Discord-RPC to Kotlin"
 
 repositories {
