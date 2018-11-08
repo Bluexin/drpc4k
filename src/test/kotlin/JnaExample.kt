@@ -20,6 +20,7 @@
 import be.bluexin.drpc4k.jna.DiscordRichPresence
 import be.bluexin.drpc4k.jna.RPCHandler
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import kotlin.random.Random
@@ -58,9 +59,11 @@ fun main(args: Array<String>) = runBlocking {
 
     RPCHandler.ifConnectedOrLater {
         // This will be called immediately if we are connected, or as soon as we connect
-        logger.info("Logged in as ${it.username}#${it.discriminator}")
-        delay(2000)
-        RPCHandler.updatePresence(presence)
+        launch {
+            logger.info("Logged in as ${it.username}#${it.discriminator}")
+            delay(2000)
+            RPCHandler.updatePresence(presence)
+        }
     }
 
     // "playing the game" ;p
