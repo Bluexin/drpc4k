@@ -60,19 +60,19 @@ object RPCHandler {
      * Called when the client clicks to join.
      */
     @Volatile
-    var onJoinGame: (joinSecret: String) -> Unit = { _ -> }
+    var onJoinGame: (joinSecret: String) -> Unit = { }
 
     /**
      * Called when the client clicks to spectate.
      */
     @Volatile
-    var onSpectateGame: (spectateSecret: String) -> Unit = { _ -> }
+    var onSpectateGame: (spectateSecret: String) -> Unit = { }
 
     /**
      * Called when Discord Rich Presence receives a join request.
      */
     @Volatile
-    var onJoinRequest: (request: DiscordUser) -> Unit = { _ -> }
+    var onJoinRequest: (request: DiscordUser) -> Unit = { }
 
     /**
      * Tries to connect the Discord Rich Presence Connection asynchronously.
@@ -152,8 +152,8 @@ object RPCHandler {
     /**
      * Run [block] immediately if connected, otherwise run it upon connection.
      */
-    fun ifConnectedOrLater(block: suspend (DiscordUser) -> Unit) {
-        if (connected.get()) GlobalScope.launch { block(user) }
+    fun ifConnectedOrLater(block: (DiscordUser) -> Unit) {
+        if (connected.get()) block(user)
         else onReady = {
             block(it)
         }
