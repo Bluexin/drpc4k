@@ -16,7 +16,7 @@ plugins {
 }
 
 val branch = prop("branch") ?: System.getenv("TRAVIS_BRANCH")
-             ?: Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD").inputStream.reader().readLines().last()
+?: Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD", null, buildDir).inputStream.reader().readLines().last()
 logger.info("On branch $branch")
 
 group = "be.bluexin"
