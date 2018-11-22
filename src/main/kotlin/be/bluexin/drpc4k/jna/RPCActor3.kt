@@ -96,14 +96,10 @@ private class RPCActor3(
             }
         } catch (e: CancellationException) {
         } catch (e: Throwable) {
-            GlobalScope.launch {
-                output.send(RPCOutputMessage.Errored(-1, "Unknown error caused by: ${e.message}"))
-            }
+            output.send(RPCOutputMessage.Errored(-1, "Unknown error caused by: ${e.message}"))
         } finally {
-            GlobalScope.launch {
-                output.send(RPCOutputMessage.Disconnected(0, "Discord RPC Thread closed."))
-                output.close()
-            }
+            output.send(RPCOutputMessage.Disconnected(0, "Discord RPC Thread closed."))
+            output.close()
             connected = false
             try {
                 DiscordRpc.Discord_Shutdown()
