@@ -24,6 +24,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
 
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 fun CoroutineScope.rpcActor2() = RPCActor2()(this)
 
@@ -46,6 +47,7 @@ class RPCActor2 {
 
     private lateinit var channel: Channel<RPCMessage>
 
+    @ObsoleteCoroutinesApi
     operator fun invoke(scope: CoroutineScope): RPCActor2 {
         scope.actor<RPCMessage>(context = Dispatchers.Unconfined, capacity = Channel.UNLIMITED) {
             this@RPCActor2.channel = this@actor.channel

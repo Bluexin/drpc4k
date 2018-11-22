@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Arnaud 'Bluexin' Solé
+ * Copyright (c) 2018 Arnaud 'Bluexin' Solé
  *
  * This file is part of drpc4k.
  *
@@ -19,6 +19,7 @@
 
 import be.bluexin.drpc4k.jna.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -26,6 +27,7 @@ import kotlin.random.Random
 
 private val logger = KotlinLogging.logger { }
 
+@ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
 fun main(args: Array<String>) = runBlocking {
     if (args.isEmpty()) {

@@ -18,11 +18,11 @@
  */
 
 import be.bluexin.drpc4k.jna.DiscordRichPresence
-import be.bluexin.drpc4k.jna.rpcActor2
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import be.bluexin.drpc4k.jna.RPCInputMessage
+import be.bluexin.drpc4k.jna.RPCOutputMessage
+import be.bluexin.drpc4k.jna.rpcActor3
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import kotlin.random.Random
 
@@ -36,7 +36,8 @@ fun main(args: Array<String>) = runBlocking {
         return@runBlocking
     }
 
-    val rpc = rpcActor2()
+    val rpcOutput = Channel<RPCOutputMessage>(capacity = Channel.UNLIMITED)
+    val rpcInput = rpcActor3(rpcOutput)
 
     val presence = DiscordRichPresence {
         details = "Raid: Kill Migas"
@@ -53,26 +54,27 @@ fun main(args: Array<String>) = runBlocking {
         spectateSecret = "anawesomesecret2"
     }
 
-    /*
-    These seem to work fine without using suspending calls on send, should be thanks to unlimited mailbox
-     */
-    rpc.connect(args[0])
-    rpc.updatePresence(presence)
-    rpc.setOnReady {
-        logger.info("Logged in as ${it.username}#${it.discriminator}")
+    launch {
+        for (msg in rpcOutput) {
+            when (msg) {
+                is RPCOutputMessage.Ready -> with(msg.user) { logger.info("Logged in as $username#$discriminator") }
+                is RPCOutputMessage.Disconnected -> with(msg) {
+                    logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
+                            ?: "No message provided"})")
+                }
+                is RPCOutputMessage.Errored -> with(msg) {
+                    logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() }
+                            ?: "No message provided"})")
+                }
+            }
+        }
     }
-    rpc.setOnDisconnected { errorCode, message ->
-        logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
-                ?: "No message provided"})")
-    }
-    rpc.setOnErrored { errorCode, message ->
-        logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
-    }
-    logger.info("Is connected? ${rpc.isConnected().await()}")
-    delay(500)
-    delay(10000)
-    logger.info("Is connected? ${rpc.isConnected().await()}")
 
-    rpc.stop()
+    rpcInput.send(RPCInputMessage.Connect(args[0]))
+    rpcInput.send(RPCInputMessage.UpdatePresence(presence))
+
+    delay(10000)
+
+    rpcInput.close()
     delay(500)
 }
