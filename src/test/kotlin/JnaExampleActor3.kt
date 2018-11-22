@@ -55,17 +55,13 @@ fun main(args: Array<String>) = runBlocking {
     }
 
     launch {
-        for (msg in rpcOutput) {
-            when (msg) {
-                is RPCOutputMessage.Ready -> with(msg.user) { logger.info("Logged in as $username#$discriminator") }
-                is RPCOutputMessage.Disconnected -> with(msg) {
-                    logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
-                            ?: "No message provided"})")
-                }
-                is RPCOutputMessage.Errored -> with(msg) {
-                    logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() }
-                            ?: "No message provided"})")
-                }
+        for (msg in rpcOutput) with(msg) {
+            when (this) {
+                is RPCOutputMessage.Ready -> with(user) { logger.info("Logged in as $username#$discriminator") }
+                is RPCOutputMessage.Disconnected -> logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
+                        ?: "No message provided"})")
+                is RPCOutputMessage.Errored -> logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() }
+                        ?: "No message provided"})")
             }
         }
     }
