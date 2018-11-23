@@ -40,7 +40,6 @@ dependencies {
 
     implementation("org.slf4j", "slf4j-api")
     implementation("io.github.microutils", "kotlin-logging", prop("kotlinLoggingVersion"))
-    compileOnly("org.slf4j", "slf4j-simple", prop("slf4jVersion"))
     testRuntime("org.slf4j", "slf4j-simple", prop("slf4jVersion"))
 
     shade("net.java.dev.jna", "jna", prop("jnaVersion"))
