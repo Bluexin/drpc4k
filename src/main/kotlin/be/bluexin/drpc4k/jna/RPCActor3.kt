@@ -29,9 +29,9 @@ import kotlin.coroutines.CoroutineContext
 
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-fun CoroutineScope.rpcActor3(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = Dispatchers.Unconfined):
+fun CoroutineScope.rpcActor3(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = Dispatchers.Default):
         SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED) {
-    RPCActor3(channel, output)()
+    RPCActor3(this, channel, output)()
 }
 
 sealed class RPCInputMessage {
@@ -56,6 +56,7 @@ sealed class RPCOutputMessage {
 
 @ExperimentalCoroutinesApi
 private class RPCActor3(
+        private val scope: CoroutineScope,
         private val input: ReceiveChannel<RPCInputMessage>,
         private val output: SendChannel<RPCOutputMessage>) {
 
@@ -101,6 +102,7 @@ private class RPCActor3(
             output.send(RPCOutputMessage.Disconnected(0, "Discord RPC Thread closed."))
             output.close()
             connected = false
+            scope.coroutineContext.cancelChildren()
             try {
                 DiscordRpc.Discord_Shutdown()
             } catch (e: Throwable) {
@@ -112,7 +114,7 @@ private class RPCActor3(
         onReady {
             user = it
             connected = true
-            GlobalScope.launch {
+            scope.launch {
                 output.send(RPCOutputMessage.Ready(it))
             }
         }
@@ -120,29 +122,29 @@ private class RPCActor3(
             logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
                     ?: "No message provided"})")
             connected = false
-            GlobalScope.launch {
+            scope.launch {
                 output.send(RPCOutputMessage.Disconnected(errorCode, message))
             }
         }
         onErrored { errorCode, message ->
             logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() } ?: "No message provided"})")
             connected = false
-            GlobalScope.launch {
+            scope.launch {
                 output.send(RPCOutputMessage.Errored(errorCode, message))
             }
         }
         onJoinGame {
-            GlobalScope.launch {
+            scope.launch {
                 output.send(RPCOutputMessage.JoinGame(it))
             }
         }
         onSpectateGame {
-            GlobalScope.launch {
+            scope.launch {
                 output.send(RPCOutputMessage.Spectate(it))
             }
         }
         onJoinRequest {
-            GlobalScope.launch {
+            scope.launch {
                 output.send(RPCOutputMessage.JoinRequest(it))
             }
         }
