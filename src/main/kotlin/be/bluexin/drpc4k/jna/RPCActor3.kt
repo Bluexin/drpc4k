@@ -26,11 +26,12 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-fun CoroutineScope.rpcActor3(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = Dispatchers.Default):
-        SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED) {
+fun CoroutineScope.rpcActor3(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = EmptyCoroutineContext):
+        SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED, start = CoroutineStart.LAZY) {
     RPCActor3(this, channel, output)()
 }
 
