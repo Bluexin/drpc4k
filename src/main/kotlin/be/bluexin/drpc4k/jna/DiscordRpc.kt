@@ -132,7 +132,7 @@ class DiscordRichPresence() : Structure() {
     }
 
     /**
-     * unix timestamp for the start of the game
+     * epoch seconds for game start - including will show time as "elapsed"
      */
     var startTimeStamp: Long
         get() = _startTimeStamp
@@ -142,7 +142,7 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * unix timestamp for when the game will end
+     * 	epoch seconds for game end - including will show time as "remaining"
      */
     var endTimeStamp: Long
         get() = _endTimeStamp
@@ -176,7 +176,7 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * 	name of the uploaded image for the small profile artwork
+     * name of the uploaded image for the small profile artwork
      * Maximum 32 characters long.
      */
     var smallImageKey: String
@@ -188,7 +188,7 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * tootltip for the smallImageKey
+     * tooltip for the smallImageKey
      * Maximum 128 characters long.
      */
     var smallImageText: String
@@ -200,7 +200,7 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * 	id of the player's party, lobby, or group
+     * id of the player's party, lobby, or group
      * Maximum 128 characters long.
      */
     var partyId: String
@@ -232,9 +232,10 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * unique hashed string for Spectate and Join
+     * [deprecated Notify Me feature, may be re-used in future]
      * Maximum 128 characters long.
      */
+    @Deprecated("Deprecated by Discord")
     var matchSecret: String
         get() = _matchSecret
         set(value) {
@@ -244,7 +245,7 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * 	unique hased string for chat invitations and Ask to Join
+     * unique hashed string for chat invitations and Ask to Join
      * Maximum 128 characters long.
      */
     var joinSecret: String
@@ -256,7 +257,7 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * unique hased string for Spectate button
+     * unique hashed string for Spectate button
      * Maximum 128 characters long.
      */
     var spectateSecret: String
@@ -268,8 +269,9 @@ class DiscordRichPresence() : Structure() {
         }
 
     /**
-     * helps track when games have ended
+     * [deprecated Notify Me feature, may be re-used in future]
      */
+    @Deprecated("Deprecated by Discord")
     var instance: Byte
         get() = _instance
         set(value) {
@@ -440,7 +442,7 @@ class DiscordUser : Structure() {
         internal set
 
     /**
-     *
+     * the discriminator of the player asking to join
      *
      * 4 decimal digits + 1 null terminator = 5
      * char discriminator[8];
