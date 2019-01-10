@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Arnaud 'Bluexin' Solé
+ * Copyright (c) 2019 Arnaud 'Bluexin' Solé
  *
  * This file is part of drpc4k.
  *
@@ -37,7 +37,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * A typical usage looks like this :
  * ```
  * val rpcOutput = Channel<RPCOutputMessage>(capacity = Channel.UNLIMITED)
- * val rpcInput = rpcActor3(rpcOutput)
+ * val rpcInput = rpcActor(rpcOutput)
  * // Connect to the client via RPC
  * rpcInput.send(RPCInputMessage.Connect(myClientKey))
  * // Update rich presence
@@ -66,9 +66,9 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-fun CoroutineScope.rpcActor3(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = EmptyCoroutineContext):
+fun CoroutineScope.rpcActor(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = EmptyCoroutineContext):
         SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED, start = CoroutineStart.LAZY) {
-    RPCActor3(this, channel, output)()
+    RPCActor(this, channel, output)()
 }
 
 /**
@@ -157,7 +157,7 @@ sealed class RPCOutputMessage {
  * @param output the actor's output channel.
  */
 @ExperimentalCoroutinesApi
-private class RPCActor3(
+private class RPCActor(
         private val scope: CoroutineScope,
         private val input: ReceiveChannel<RPCInputMessage>,
         private val output: SendChannel<RPCOutputMessage>) {
