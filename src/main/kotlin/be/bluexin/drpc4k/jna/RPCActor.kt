@@ -66,7 +66,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-fun CoroutineScope.rpcActor(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = EmptyCoroutineContext):
+fun CoroutineScope.rpcActor(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = this.coroutineContext):
         SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED, start = CoroutineStart.LAZY) {
     RPCActor(this, channel, output)()
 }
