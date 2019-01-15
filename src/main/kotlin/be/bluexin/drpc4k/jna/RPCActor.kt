@@ -26,7 +26,6 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Start a new Discord RPC Actor in the current [this] [CoroutineScope].
@@ -68,7 +67,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 @ExperimentalCoroutinesApi
 fun CoroutineScope.rpcActor(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = this.coroutineContext):
         SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED, start = CoroutineStart.LAZY) {
-    RPCActor(this, channel, output)()
+    RPCActor(this, channel, output).start()
 }
 
 /**
@@ -171,7 +170,7 @@ private class RPCActor(
     /**
      * Start the actor.
      */
-    suspend operator fun invoke() {
+    suspend fun start() {
         for (m in input) onReceive(m)
     }
 
