@@ -95,7 +95,6 @@ sealed class RPCInputMessage {
      * Update the user's Rich Presence.
      * The presence will be cached if used before the app has connected, and automatically sent once ready.
      *
-     * @param presence presence to update.
      * @see DiscordRichPresence for all available options.
      */
     class UpdatePresence(val presence: DiscordRichPresence) : RPCInputMessage()
