@@ -83,7 +83,7 @@ sealed class RPCInputMessage {
      * @param steamId your app's Steam ID, if any.
      * @param refreshRate the rate in milliseconds at which this handler will run callbacks and send info to discord.
      */
-    class Connect(
+    data class Connect(
             val clientId: String,
             val autoRegister: Boolean = false,
             val steamId: String? = null,
@@ -96,7 +96,7 @@ sealed class RPCInputMessage {
      *
      * @see DiscordRichPresence for all available options.
      */
-    class UpdatePresence(val presence: DiscordRichPresence) : RPCInputMessage()
+    data class UpdatePresence(val presence: DiscordRichPresence) : RPCInputMessage()
 }
 
 /**
@@ -107,7 +107,7 @@ sealed class RPCOutputMessage {
     /**
      * Sent when the RPC actor has logged in, and is ready to be accessed.
      */
-    class Ready(val user: DiscordUser) : RPCOutputMessage()
+    data class Ready(val user: DiscordUser) : RPCOutputMessage()
 
     /**
      * Sent when the RPC actor has been disconnected.
@@ -115,7 +115,7 @@ sealed class RPCOutputMessage {
      * @param errorCode the error code causing disconnection.
      * @param message the message for disconnection.
      */
-    class Disconnected(val errorCode: Int, val message: String) : RPCOutputMessage()
+    data class Disconnected(val errorCode: Int, val message: String) : RPCOutputMessage()
 
     /**
      * Sent when the RPC actor has detected an error.
@@ -123,28 +123,28 @@ sealed class RPCOutputMessage {
      * @param errorCode the error code causing the error.
      * @param message the message for the error.
      */
-    class Errored(val errorCode: Int, val message: String) : RPCOutputMessage()
+    data class Errored(val errorCode: Int, val message: String) : RPCOutputMessage()
 
     /**
      * Sent when the someone accepted a game invitation.
      *
      * @param joinSecret the game invitation secret.
      */
-    class JoinGame(val joinSecret: String) : RPCOutputMessage()
+    data class JoinGame(val joinSecret: String) : RPCOutputMessage()
 
     /**
      * Sent when the someone accepted a game spectating invitation.
      *
      * @param spectateSecret the game spectating secret.
      */
-    class Spectate(val spectateSecret: String) : RPCOutputMessage()
+    data class Spectate(val spectateSecret: String) : RPCOutputMessage()
 
     /**
      * Sent when the someone requested to join the game.
      *
      * @param user the requester.
      */
-    class JoinRequest(val user: DiscordUser) : RPCOutputMessage()
+    data class JoinRequest(val user: DiscordUser) : RPCOutputMessage()
 }
 
 /**
