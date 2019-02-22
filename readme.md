@@ -27,7 +27,7 @@ Then add the dependency:
 ```groovy
 dependencies {
     /* project dependencies */
-    compile("be.bluexin:drpc4k:0.8")
+    compile("be.bluexin:drpc4k:0.9")
 }
 ```
 Maven :
@@ -35,7 +35,7 @@ Maven :
 <dependency>
   <groupId>be.bluexin</groupId>
   <artifactId>drpc4k</artifactId>
-  <version>0.8</version>
+  <version>0.9</version>
   <type>pom</type>
 </dependency>
 ```
@@ -46,6 +46,6 @@ You can also directly download it from [Bintray](https://bintray.com/bluexin/blu
 
 ## Rich Presence
 
-To use Discord Rich Presence, the easiest way is to use the wrapper class [be.bluexin.drpc4k.jna.RPCHandler](src/main/kotlin/be/bluexin/drpc4k/jna/RPCHandler.kt).
+To use Discord Rich Presence, the easiest way is to use the Actor wrapper [be.bluexin.drpc4k.jna.RPCActor](src/main/kotlin/be/bluexin/drpc4k/jna/RPCActor.kt).
 It will handle everything using lightweight Kotlin Coroutines.
-An example usage can be found at [src/test/kotlin/JnaExample.kt](src/test/kotlin/JnaExample.kt).
+An example usage can be found at [src/test/kotlin/JnaExampleActor.kt](src/test/kotlin/JnaExampleActor.kt).
