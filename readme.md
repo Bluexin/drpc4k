@@ -1,4 +1,4 @@
-# drpc4k [![Build Status](https://travis-ci.org/Bluexin/drpc4k.svg?branch=master)](https://travis-ci.org/Bluexin/drpc4k) [ ![Bintray](https://api.bintray.com/packages/bluexin/bluexin/drpc4k/images/download.svg) ](https://bintray.com/bluexin/bluexin/drpc4k/_latestVersion)
+# drpc4k
 
 drpc4k (discord-rpc for Kotlin) is a project that aims to provide [Kotlin](https://kotlinlang.org) bindings for [discord-rpc](https://github.com/discordapp/discord-rpc)
 
@@ -11,15 +11,13 @@ I plan on making a pure Kotlin one too though.
 
 ## Using this library
 
-Make sure you enable the `jcenter` repository for releases.
-For snapshots, please add [https://oss.jfrog.org/simple/libs-snapshot](https://oss.jfrog.org/simple/libs-snapshot).
+Usage of Jitpack.io is prefered over the previous use of JCenter (Which is now read-only).
+To use snapshots, replace the version tag with the commit short hash.
 
 When using gradle (groovy or kts):
 ```groovy
 repositories {
-    jcenter()
-    /* for snapshots */
-	maven("https://oss.jfrog.org/simple/libs-snapshot")
+    maven("https://jitpack.io")
 }
 ```
 
@@ -27,20 +25,29 @@ Then add the dependency:
 ```groovy
 dependencies {
     /* project dependencies */
-    compile("be.bluexin:drpc4k:0.9")
+    compile("com.github.Bluexin:drpc4k:v0.9")
 }
 ```
+
 Maven :
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+
+And the dependency:
+```xml
 <dependency>
-  <groupId>be.bluexin</groupId>
-  <artifactId>drpc4k</artifactId>
-  <version>0.9</version>
-  <type>pom</type>
+    <groupId>com.github.defvs</groupId>
+    <artifactId>drpc4k</artifactId>
+    <version>Tag</version>
 </dependency>
 ```
-A list of versions can be found [on bintray](https://bintray.com/bluexin/bluexin/drpc4k).
-Snapshot versions can be found on [OJO](https://oss.jfrog.org/artifactory/webapp/#/artifacts/browse/tree/General/oss-snapshot-local/be/bluexin/drpc4k).
+A list of versions can be found [on Jitpack]([https://bintray.com/bluexin/bluexin/drpc4k](https://jitpack.io/#Bluexin/drpc4k)).
 
 You can also directly download it from [Bintray](https://bintray.com/bluexin/bluexin/drpc4k/_latestVersion).
 
