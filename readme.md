@@ -11,7 +11,7 @@ I plan on making a pure Kotlin one too though.
 
 ## Using this library
 
-Usage of Jitpack.io is prefered over the previous use of JCenter (Which is now read-only).
+Usage of Jitpack.io is preferred over the previous use of JCenter (Which is now read-only).
 To use snapshots, replace the version tag with the commit short hash.
 
 When using gradle (groovy or kts):
