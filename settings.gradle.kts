@@ -1,13 +1,12 @@
 rootProject.name = "drpc4k"
 //include("drpc4k-pure")
-enableFeaturePreview("STABLE_PUBLISHING")
-
-val kotlin_version: String by settings
-val undercouch_dl_version: String by settings
-val bintray_version: String by settings
-val artifactory_version: String by settings
 
 pluginManagement {
+    val kotlin_version: String by settings
+    val undercouch_dl_version: String by settings
+    val bintray_version: String by settings
+    val artifactory_version: String by settings
+
     resolutionStrategy {
         eachPlugin {
             logger.debug("Requested: " + requested.id.id)

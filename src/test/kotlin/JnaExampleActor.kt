@@ -62,6 +62,7 @@ fun main(args: Array<String>) = runBlocking {
                         ?: "No message provided"})")
                 is RPCOutputMessage.Errored -> logger.error("Error: #$errorCode (${message.takeIf { message.isNotEmpty() }
                         ?: "No message provided"})")
+                else -> Unit
             }
         }
     }

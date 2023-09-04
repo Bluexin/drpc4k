@@ -1,22 +1,20 @@
-import com.jfrog.bintray.gradle.BintrayExtension
 import de.undercouch.gradle.tasks.download.Download
-import groovy.lang.GroovyObject
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
-import kotlin.concurrent.thread
 
 plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm")
     id("de.undercouch.download")
-    id("com.jfrog.bintray")
-    id("com.jfrog.artifactory")
 }
 
-val branch = prop("branch") ?: System.getenv("TRAVIS_BRANCH") ?: System.getenv("GIT_BRANCH")
-?: Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD", null, buildDir).inputStream.reader().readLines().last()
+val branch = prop("branch")
+    ?: System.getenv("TRAVIS_BRANCH")
+    ?: System.getenv("GIT_BRANCH")
+    ?: Runtime.getRuntime().exec(
+        "git rev-parse --abbrev-ref HEAD", null, layout.buildDirectory.asFile.get()
+    ).inputStream.reader().readLines().last()
+
 logger.info("On branch $branch")
 
 group = "be.bluexin"
@@ -24,23 +22,27 @@ version = "$branch-".takeUnless { branch == "master" }.orEmpty() + prop("version
 description = "Bringing Discord-RPC to Kotlin"
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 val shade by configurations.creating
 val shadeInPlace by configurations.creating
 
-configurations.compileOnly.extendsFrom(shade, shadeInPlace)
-configurations.testCompileOnly.extendsFrom(shade, shadeInPlace)
+configurations.implementation.configure {
+    extendsFrom(shade, shadeInPlace)
+}
+configurations.testImplementation.configure {
+    extendsFrom(shade, shadeInPlace)
+}
 
 dependencies {
     api(kotlin("stdlib-jdk8"))
-    api("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+    api("org.jetbrains.kotlinx", "kotlinx-coroutines-core", prop("coroutinesVersion"))
     api("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", prop("coroutinesVersion"))
 
-    implementation("org.slf4j", "slf4j-api")
-    implementation("io.github.microutils", "kotlin-logging", prop("kotlinLoggingVersion"))
-    testRuntime("org.slf4j", "slf4j-simple", prop("slf4jVersion"))
+    implementation("org.slf4j", "slf4j-api", prop("slf4jVersion"))
+    implementation("io.github.microutils", "kotlin-logging-jvm", prop("kotlinLoggingVersion"))
+    testRuntimeOnly("org.slf4j", "slf4j-simple", prop("slf4jVersion"))
 
     shade("net.java.dev.jna", "jna", prop("jnaVersion"))
     shadeInPlace(files("libs"))
@@ -50,11 +52,14 @@ dependencies {
 }
 
 tasks {
-    withType<KotlinCompile> {
+    withType<KotlinCompile>().configureEach {
         kotlinOptions.jvmTarget = "1.8"
     }
+    withType<JavaCompile>().configureEach {
+        targetCompatibility = "1.8"
+    }
 
-    getByName("jar", Jar::class).apply {
+    named<Jar>("jar") {
         for (dep in shade) {
             from(zipTree(dep)) {
                 exclude("META-INF", "META-INF/**")
@@ -68,23 +73,26 @@ tasks {
     // DISCORDRPC
 
     val discordVersion = prop("discord_rpc_version")
-    val discordDownloadFolder = "$buildDir/download/discord/$discordVersion"
+    val discordDownloadFolder = "${layout.buildDirectory.asFile.get()}/download/discord/$discordVersion"
 
-    val dlDiscordRPC by creating {
+    val downloadTasks = arrayOf("win", "linux", "osx").map {
+        register<Download>("download-$it") {
+            src("https://github.com/discordapp/discord-rpc/releases/download/v$discordVersion/discord-rpc-$it.zip")
+            dest("$discordDownloadFolder/discord-rpc-$it.zip")
+            overwrite(false)
+        }
+    }
+
+    val dlDiscordRPC by registering {
         logger.info("Downloading discord-rpc version $discordVersion...")
-        arrayOf("win", "linux", "osx").forEach {
-            val dlCurrent by tasks.register<Download>("download-$it") {
-                src("https://github.com/discordapp/discord-rpc/releases/download/v$discordVersion/discord-rpc-$it.zip")
-                dest("$discordDownloadFolder/discord-rpc-$it.zip")
-                overwrite(false)
-            }
-            outputs.files(dlCurrent.outputFiles)
-            dependsOn(dlCurrent)
+        downloadTasks.forEach {
+            outputs.files(it.get().outputFiles)
+            dependsOn(it)
         }
     }
 
     val expandDiscordRPC by creating(Copy::class) {
-        inputs.files(dlDiscordRPC.outputs.files)
+        inputs.files(dlDiscordRPC.get().outputs.files)
 
         logger.info("Expanding discord-rpc...")
         val outputDir = file("libsExt")
@@ -92,10 +100,10 @@ tasks {
 
         val extensions = arrayOf("dll", "so", "dylib")
         val map = mapOf(
-                "win64-dynamic" to "win32-x86-64",
-                "win32-dynamic" to "win32-x86",
-                "linux-dynamic" to "linux-x86-64",
-                "osx-dynamic" to "darwin"
+            "win64-dynamic" to "win32-x86-64",
+            "win32-dynamic" to "win32-x86",
+            "linux-dynamic" to "linux-x86-64",
+            "osx-dynamic" to "darwin"
         )
 
         from(inputs.files.map { logger.info("Zip: $it"); zipTree(it) })
@@ -125,7 +133,7 @@ tasks {
 val sourcesJar by tasks.creating(Jar::class) {
     from(sourceSets["main"].allSource)
     from(sourceSets["test"].allSource)
-    classifier = "sources"
+    archiveClassifier.set("sources")
 }
 
 publishing {
@@ -137,8 +145,9 @@ publishing {
     repositories {
         val mavenPassword = if (hasProp("local")) null else prop("mavenPassword")
         maven {
-            val remoteURL = "https://maven.bluexin.be/repository/" + (if ((version as String).contains("SNAPSHOT")) "snapshots" else "releases")
-            val localURL = "file://$buildDir/repo"
+            val remoteURL =
+                "https://maven.bluexin.be/repository/" + (if ((version as String).contains("SNAPSHOT")) "snapshots" else "releases")
+            val localURL = "file://${layout.buildDirectory.asFile.get()}/repo"
             url = uri(if (mavenPassword != null) remoteURL else localURL)
             if (mavenPassword != null) {
                 credentials(PasswordCredentials::class.java) {
@@ -150,42 +159,6 @@ publishing {
     }
 }
 val publication by publishing.publications
-
-bintray {
-    user = prop("bintrayUser")
-    key = prop("bintrayApiKey")
-    publish = true
-    override = true
-    setPublications(publication.name)
-    pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
-        repo = "bluexin"
-        name = project.name
-        userOrg = "bluexin"
-        websiteUrl = "https://github.com/Bluexin/drpc4k"
-        githubRepo = "Bluexin/drpc4k"
-        vcsUrl = "https://github.com/Bluexin/drpc4k"
-        issueTrackerUrl = "https://github.com/Bluexin/drpc4k/issues"
-        desc = project.description
-        setLabels("kotlin", "discord")
-        setLicenses("GPL-3.0")
-    })
-}
-
-artifactory {
-    setContextUrl("https://oss.jfrog.org")
-    publish(delegateClosureOf<PublisherConfig> {
-        repository(delegateClosureOf<GroovyObject> {
-            val targetRepoKey = if (project.version.toString().endsWith("-SNAPSHOT")) "oss-snapshot-local" else "oss-release-local"
-            setProperty("repoKey", targetRepoKey)
-            setProperty("username", prop("bintrayUser"))
-            setProperty("password", prop("bintrayApiKey"))
-            setProperty("maven", true)
-        })
-        defaults(delegateClosureOf<GroovyObject> {
-            invokeMethod("publications", publication.name)
-        })
-    })
-}
 
 // UTILS
 

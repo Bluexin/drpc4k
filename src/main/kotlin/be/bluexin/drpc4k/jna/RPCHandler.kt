@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object RPCHandler {
     private val logger = KotlinLogging.logger {}
+    private var cScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("Discord RPC"))
 
     /**
      * Called when Discord Rich Presence is ready.
@@ -90,7 +91,7 @@ object RPCHandler {
             finishPending()
         }
 
-        runner = GlobalScope.launch {
+        runner = cScope.launch {
             try {
                 DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
                 while (isActive) {
@@ -105,7 +106,7 @@ object RPCHandler {
                 connected.set(false)
                 try {
                     DiscordRpc.Discord_Shutdown()
-                } catch (e: Throwable) {
+                } catch (_: Throwable) {
                 }
             }
         }
@@ -119,7 +120,7 @@ object RPCHandler {
     fun updatePresence(presence: DiscordRichPresence) {
         if (!connected.get() || runner == null) throw IllegalStateException("Not connected!")
 
-        GlobalScope.launch(runner!!) {
+        cScope.launch(runner!!) {
             DiscordRpc.Discord_UpdatePresence(presence)
         }
     }

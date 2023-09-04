@@ -20,10 +20,7 @@
 package be.bluexin.drpc4k.jna
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.channels.*
 import mu.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 
@@ -65,8 +62,10 @@ import kotlin.coroutines.CoroutineContext
  */
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-fun CoroutineScope.rpcActor(output: SendChannel<RPCOutputMessage>, context: CoroutineContext = this.coroutineContext):
-        SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED, start = CoroutineStart.LAZY) {
+fun CoroutineScope.rpcActor(
+    output: SendChannel<RPCOutputMessage>,
+    context: CoroutineContext = this.coroutineContext
+): SendChannel<RPCInputMessage> = actor(context = context, capacity = Channel.UNLIMITED) {
     RPCActor(this, channel, output).start()
 }
 
@@ -84,10 +83,10 @@ sealed class RPCInputMessage {
      * @param refreshRate the rate in milliseconds at which this handler will run callbacks and send info to discord.
      */
     data class Connect(
-            val clientId: String,
-            val autoRegister: Boolean = false,
-            val steamId: String? = null,
-            val refreshRate: Long = 500L
+        val clientId: String,
+        val autoRegister: Boolean = false,
+        val steamId: String? = null,
+        val refreshRate: Long = 500L
     ) : RPCInputMessage()
 
     /**
@@ -156,9 +155,10 @@ sealed class RPCOutputMessage {
  */
 @ExperimentalCoroutinesApi
 private class RPCActor(
-        private val scope: CoroutineScope,
-        private val input: ReceiveChannel<RPCInputMessage>,
-        private val output: SendChannel<RPCOutputMessage>) {
+    private val scope: CoroutineScope,
+    private val input: ReceiveChannel<RPCInputMessage>,
+    private val output: SendChannel<RPCOutputMessage>
+) {
 
     private val logger = KotlinLogging.logger { }
 
@@ -177,7 +177,10 @@ private class RPCActor(
     private suspend fun onReceive(msg: RPCInputMessage) {
         when (msg) {
             is RPCInputMessage.Connect -> with(msg) { connect(clientId, autoRegister, steamId, refreshRate) }
-            is RPCInputMessage.UpdatePresence -> if (initialized) DiscordRpc.Discord_UpdatePresence(msg.presence) else queuedPresence = msg.presence
+            is RPCInputMessage.UpdatePresence -> {
+                if (initialized) DiscordRpc.Discord_UpdatePresence(msg.presence)
+                else queuedPresence = msg.presence
+            }
         }
     }
 
@@ -186,7 +189,12 @@ private class RPCActor(
      *
      * @see DiscordRpc.Discord_Initialize
      */
-    private suspend fun connect(clientId: String, autoRegister: Boolean = false, steamId: String? = null, refreshRate: Long = 500L) {
+    private suspend fun connect(
+        clientId: String,
+        autoRegister: Boolean = false,
+        steamId: String? = null,
+        refreshRate: Long = 500L
+    ) {
         try {
             DiscordRpc.Discord_Initialize(clientId, handlers, autoRegister, steamId)
             initialized = true
@@ -194,16 +202,16 @@ private class RPCActor(
                 DiscordRpc.Discord_UpdatePresence(queuedPresence!!)
                 queuedPresence = null
             }
-            while (!input.isClosedForReceive) {
-                var m = input.poll()
-                while (m != null) {
-                    onReceive(m)
-                    m = input.poll()
+            var m: ChannelResult<RPCInputMessage> = input.tryReceive()
+            while (!m.isClosed) {
+                while (m.isSuccess) {
+                    onReceive(m.getOrThrow())
+                    m = input.tryReceive()
                 }
                 DiscordRpc.Discord_RunCallbacks()
                 delay(refreshRate)
             }
-        } catch (e: CancellationException) {
+        } catch (_: CancellationException) {
         } catch (e: Throwable) {
             output.send(RPCOutputMessage.Errored(-1, "Unknown error caused by: ${e.message}"))
         } finally {
@@ -213,7 +221,7 @@ private class RPCActor(
             scope.coroutineContext.cancelChildren()
             try {
                 DiscordRpc.Discord_Shutdown()
-            } catch (e: Throwable) {
+            } catch (_: Throwable) {
             }
         }
     }
@@ -227,8 +235,11 @@ private class RPCActor(
             }
         }
         onDisconnected { errorCode, message ->
-            logger.warn("Disconnected: #$errorCode (${message.takeIf { message.isNotEmpty() }
-                    ?: "No message provided"})")
+            logger.warn(
+                "Disconnected: #$errorCode (${
+                    message.takeIf { message.isNotEmpty() }
+                        ?: "No message provided"
+                })")
             connected = false
             scope.launch {
                 output.send(RPCOutputMessage.Disconnected(errorCode, message))
