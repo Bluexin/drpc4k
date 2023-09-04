@@ -15,7 +15,7 @@ plugins {
     id("com.jfrog.artifactory")
 }
 
-val branch = prop("branch") ?: System.getenv("TRAVIS_BRANCH")
+val branch = prop("branch") ?: System.getenv("TRAVIS_BRANCH") ?: System.getenv("GIT_BRANCH")
 ?: Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD", null, buildDir).inputStream.reader().readLines().last()
 logger.info("On branch $branch")
 
